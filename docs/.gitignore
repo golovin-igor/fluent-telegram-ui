@@ -1,0 +1,18 @@
+# Jekyll site build artifacts
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+vendor/
+
+# Bundler artifacts
+.bundle/
+vendor/bundle/
+
+# Local development config
+.jekyll-metadata
+.sass-cache/
+
+# OS specific files
+.DS_Store
+Thumbs.db
