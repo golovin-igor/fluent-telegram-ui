@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FluentTelegramUI.Models;
 using FluentTelegramUI.Handlers;
+using FluentTelegramUI.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -19,6 +20,8 @@ namespace FluentTelegramUI
         private readonly Dictionary<Type, Type> _services = new();
         private IFluentUpdateHandler? _updateHandler;
         private bool _autoStartReceiving = false;
+        private List<(string Title, Action<ScreenBuilder> Configure, bool IsMainScreen)> _screenBuilders = new();
+        private string? _mainScreenId = null;
         
         /// <summary>
         /// Sets the Telegram bot token
@@ -90,6 +93,30 @@ namespace FluentTelegramUI
         }
         
         /// <summary>
+        /// Adds a screen to the bot
+        /// </summary>
+        /// <param name="title">The screen title</param>
+        /// <param name="configure">The configuration action</param>
+        /// <param name="isMainScreen">Whether this screen is the main screen</param>
+        /// <returns>The TelegramBotBuilder instance for method chaining</returns>
+        public TelegramBotBuilder AddScreen(string title, Action<ScreenBuilder> configure, bool isMainScreen = false)
+        {
+            _screenBuilders.Add((title, configure, isMainScreen));
+            return this;
+        }
+        
+        /// <summary>
+        /// Sets the main screen by ID
+        /// </summary>
+        /// <param name="screenId">The ID of the screen to set as main</param>
+        /// <returns>The TelegramBotBuilder instance for method chaining</returns>
+        public TelegramBotBuilder WithMainScreen(string screenId)
+        {
+            _mainScreenId = screenId;
+            return this;
+        }
+        
+        /// <summary>
         /// Builds and returns a FluentTelegramBot instance
         /// </summary>
         /// <returns>A FluentTelegramBot instance</returns>
@@ -125,6 +152,55 @@ namespace FluentTelegramUI
             
             // Create bot instance
             var bot = new FluentTelegramBot(serviceProvider);
+            
+            // Register screens
+            var screenIdMap = new Dictionary<int, string>();
+            int screenIndex = 0;
+            
+            foreach (var (title, configure, isMainScreen) in _screenBuilders)
+            {
+                var screenBuilder = new ScreenBuilder(bot, title);
+                
+                // Set main screen flag before configuring
+                if (isMainScreen)
+                {
+                    screenBuilder.AsMainScreen();
+                }
+                
+                configure(screenBuilder);
+                var screen = screenBuilder.Build();
+                screenIdMap[screenIndex] = screen.Id;
+                
+                // Set as main screen if this is the main screen or if it was configured as a main screen
+                if (isMainScreen || screen.IsMainScreen)
+                {
+                    bot.SetMainScreen(screen);
+                }
+                
+                screenIndex++;
+            }
+            
+            // Set main screen by ID if provided and we don't have a main screen yet
+            if (_mainScreenId != null && bot.MainScreen == null)
+            {
+                if (bot.TryGetScreen(_mainScreenId, out var screen) && screen != null)
+                {
+                    bot.SetMainScreen(screen);
+                }
+            }
+            
+            // Create a screen update handler if one is not already set
+            if (_updateHandler == null)
+            {
+                var logger = serviceProvider.GetService<ILogger<ScreenUpdateHandler>>();
+                if (logger == null)
+                {
+                    logger = new LoggerFactory().CreateLogger<ScreenUpdateHandler>();
+                }
+                
+                _updateHandler = new ScreenUpdateHandler(logger, bot.ScreenManager);
+                WithUpdateHandler(_updateHandler);
+            }
             
             // Start receiving updates if enabled
             if (_autoStartReceiving)

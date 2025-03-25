@@ -21,7 +21,27 @@ namespace FluentTelegramUI
         private readonly ILogger<FluentTelegramBot> _logger;
         private readonly FluentStyle _defaultStyle;
         private readonly IFluentUpdateHandler _updateHandler;
+        private readonly ScreenManager _screenManager;
         private CancellationTokenSource? _receivingCts;
+        
+        /// <summary>
+        /// Gets the screen manager
+        /// </summary>
+        public ScreenManager ScreenManager => _screenManager;
+        
+        /// <summary>
+        /// Gets the main screen from which navigation starts
+        /// </summary>
+        public Screen? MainScreen => _screenManager.MainScreen;
+        
+        /// <summary>
+        /// Sets the update handler
+        /// </summary>
+        /// <param name="updateHandler">The update handler to use</param>
+        public void SetUpdateHandler(IFluentUpdateHandler updateHandler)
+        {
+            _updateHandler = updateHandler;
+        }
         
         /// <summary>
         /// Initializes a new instance of the FluentTelegramBot class
@@ -38,6 +58,11 @@ namespace FluentTelegramUI
             {
                 _defaultStyle = FluentStyle.Default;
             }
+            
+            // Create the screen manager
+            var screenManagerLogger = _serviceProvider.GetService<ILogger<ScreenManager>>() ?? 
+                                     new Logger<ScreenManager>(LogLevel.Information, typeof(ScreenManager).Name);
+            _screenManager = new ScreenManager(_botClient, screenManagerLogger);
             
             // Create an update handler
             _updateHandler = _serviceProvider.GetService<IFluentUpdateHandler>();
@@ -140,7 +165,10 @@ namespace FluentTelegramUI
             }
             else if (update.CallbackQuery is { } callbackQuery)
             {
-                // Handle callback query
+                // Handle callback query using the screen manager first
+                await _screenManager.HandleCallbackQueryAsync(callbackQuery, cancellationToken);
+                
+                // Then the regular update handler
                 await _updateHandler.HandleCallbackQueryAsync(botClient, callbackQuery, cancellationToken);
             }
         }
@@ -148,6 +176,78 @@ namespace FluentTelegramUI
         private async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             await _updateHandler.HandlePollingErrorAsync(botClient, exception, cancellationToken);
+        }
+        
+        /// <summary>
+        /// Registers a screen with the bot
+        /// </summary>
+        /// <param name="screen">The screen to register</param>
+        /// <param name="isMainScreen">Whether this screen is the main screen</param>
+        public void RegisterScreen(Screen screen, bool isMainScreen = false)
+        {
+            _screenManager.RegisterScreen(screen, isMainScreen);
+        }
+        
+        /// <summary>
+        /// Sets a screen as the main screen
+        /// </summary>
+        /// <param name="screen">The screen to set as main</param>
+        public void SetMainScreen(Screen screen)
+        {
+            _screenManager.SetMainScreen(screen);
+        }
+        
+        /// <summary>
+        /// Navigates to a screen for a specific chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="screenId">The screen ID</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task NavigateToScreenAsync(long chatId, string screenId, CancellationToken cancellationToken = default)
+        {
+            await _screenManager.NavigateToScreenAsync(chatId, screenId, cancellationToken);
+        }
+        
+        /// <summary>
+        /// Navigates to the main screen for a specific chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task NavigateToMainScreenAsync(long chatId, CancellationToken cancellationToken = default)
+        {
+            await _screenManager.NavigateToMainScreenAsync(chatId, cancellationToken);
+        }
+        
+        /// <summary>
+        /// Tries to get a screen by its ID
+        /// </summary>
+        /// <param name="screenId">The screen ID</param>
+        /// <param name="screen">The screen, if found</param>
+        /// <returns>True if the screen was found, otherwise false</returns>
+        public bool TryGetScreen(string screenId, out Screen? screen)
+        {
+            return _screenManager.GetScreenById(screenId, out screen);
+        }
+        
+        /// <summary>
+        /// Creates a new screen instance
+        /// </summary>
+        /// <param name="title">The screen title</param>
+        /// <param name="content">The screen content</param>
+        /// <param name="isMainScreen">Whether this screen is the main screen</param>
+        /// <returns>A new screen instance</returns>
+        public Screen CreateScreen(string title, Models.Message? content = null, bool isMainScreen = false)
+        {
+            var screen = new Screen
+            {
+                Title = title,
+                Content = content ?? new Models.Message()
+            };
+            
+            RegisterScreen(screen, isMainScreen);
+            return screen;
         }
         
         /// <summary>

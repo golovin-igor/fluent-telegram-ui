@@ -10,6 +10,8 @@ A modern, fluent-style UI framework for creating Telegram bots using C# .NET. Th
 - 🎯 Built-in support for common Telegram bot patterns
 - 🚀 High-performance and scalable architecture
 - 📦 NuGet package available for easy integration
+- 🔄 Screen-based navigation with back functionality
+- 🎛️ Interactive UI controls with callback handling
 
 ## Getting Started
 
@@ -44,6 +46,50 @@ var message = new MessageBuilder()
 await bot.SendMessageAsync(message);
 ```
 
+## Screen System
+
+The Screen system allows you to create interactive UI screens with navigation and callbacks:
+
+```csharp
+// Create a bot with screens
+var bot = new TelegramBotBuilder()
+    .WithToken("YOUR_BOT_TOKEN")
+    .WithFluentUI()
+    .AddScreen("Main Menu", sb => {
+        sb.WithContent("Welcome to the main menu!", true)
+          .AddButton("Settings", "view_settings")
+          .AddButton("Profile", "view_profile")
+          .WithButtonsPerRow(1)
+          .AsMainScreen(); // Mark as the main screen
+    })
+    .AddScreen("Settings", sb => {
+        sb.WithContent("Configure settings:", true)
+          .AddButton("Dark Mode", "toggle_dark_mode")
+          .AddButton("Notifications", "toggle_notifications")
+          .WithButtonsPerRow(2)
+          .OnCallback("toggle_dark_mode", async (data) => {
+              // Handle dark mode toggle
+              return true; // Refresh screen
+          });
+    })
+    .WithAutoStartReceiving()
+    .Build();
+
+// Configure navigation between screens
+if (bot.TryGetScreen("Main Menu", out var mainScreen) && 
+    bot.TryGetScreen("Settings", out var settingsScreen))
+{
+    // Set up navigation
+    mainScreen.OnCallback("view_settings", async (data) => {
+        await bot.NavigateToScreenAsync(chatId, settingsScreen.Id);
+        return true;
+    });
+    
+    // Set parent for back navigation
+    settingsScreen.WithParent(mainScreen);
+}
+```
+
 ## Examples
 
 ### Creating a Simple Menu
@@ -70,6 +116,36 @@ var card = new CardBuilder()
     .Build();
 ```
 
+### Creating Interactive Screens
+
+```csharp
+// Create a counter screen
+var counterScreen = bot.CreateScreen("Counter", new Message
+{
+    Text = "Current counter value: 0",
+    ParseMarkdown = true
+});
+
+// Add controls and event handlers
+counterScreen.AddControl(new ButtonGroup(new List<Button>
+{
+    new Button { Text = "Increment", CallbackData = "counter:increment" },
+    new Button { Text = "Decrement", CallbackData = "counter:decrement" },
+    new Button { Text = "Reset", CallbackData = "counter:reset" }
+}, 2));
+
+// Variable to track state
+var counter = 0;
+
+// Add event handlers
+counterScreen.OnCallback("counter:increment", async (data) => 
+{
+    counter++;
+    counterScreen.Content.Text = $"Current counter value: {counter}";
+    return true; // Return true to refresh the screen
+});
+```
+
 ## Project Structure
 
 The project is organized into several key namespaces:
@@ -90,6 +166,7 @@ The project is organized into several key namespaces:
 
 ### UI Components
 - [x] Add support for custom themes (via FluentStyle)
+- [x] Implement screen-based UI navigation
 - [ ] Implement responsive grid layouts
 - [ ] Create reusable animation components
 - [x] Add support for custom fonts and styles
@@ -97,15 +174,16 @@ The project is organized into several key namespaces:
 
 ### Bot Features
 - [x] Add support for inline keyboards
-- [ ] Implement conversation flow management
-- [ ] Create state management system
+- [x] Implement conversation flow management via screens
+- [x] Create state management system
 - [x] Add support for media messages
 - [x] Implement error handling and retry mechanisms
+- [x] Add screen navigation with back functionality
 
 ### Documentation
 - [ ] Create detailed API documentation
 - [x] Add code examples
-- [ ] Create a getting started guide
+- [x] Create a getting started guide
 - [ ] Add troubleshooting section
 - [ ] Create contribution guidelines
 
@@ -118,6 +196,10 @@ The project is organized into several key namespaces:
 
 ## Recent Updates
 
+- Added screen system with navigation and callback handling
+- Implemented main screen functionality as entry point for users
+- Added back navigation with customizable text and behavior
+- Enhanced UI controls with event handling capabilities
 - Reorganized handlers into a dedicated `Handlers` namespace
 - Updated testing framework to focus on behavior rather than implementation details
 - Renamed `FluentStyle.Material` to `FluentStyle.Modern` for better design alignment

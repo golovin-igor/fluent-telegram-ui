@@ -81,5 +81,121 @@ namespace FluentTelegramUI.Tests
             
             Assert.NotNull(messageOnlyMethod);
         }
+        
+        [Fact]
+        public void FluentTelegramBot_CreateScreen_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var methods = botType.GetMethods();
+            
+            var createScreenMethod = Array.Find(methods, m => 
+                m.Name == "CreateScreen" && 
+                m.GetParameters().Length >= 1 && 
+                m.GetParameters()[0].ParameterType == typeof(string));
+            
+            // Assert
+            createScreenMethod.Should().NotBeNull();
+            createScreenMethod.ReturnType.Should().Be(typeof(Models.Screen));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_RegisterScreen_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var method = botType.GetMethod("RegisterScreen");
+            
+            // Assert
+            method.Should().NotBeNull();
+            method.GetParameters().Should().HaveCount(2);
+            method.GetParameters()[0].ParameterType.Should().Be(typeof(Models.Screen));
+            method.GetParameters()[1].ParameterType.Should().Be(typeof(bool));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_SetMainScreen_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var method = botType.GetMethod("SetMainScreen");
+            
+            // Assert
+            method.Should().NotBeNull();
+            method.GetParameters().Should().HaveCount(1);
+            method.GetParameters()[0].ParameterType.Should().Be(typeof(Models.Screen));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_NavigateToScreenAsync_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var method = botType.GetMethod("NavigateToScreenAsync");
+            
+            // Assert
+            method.Should().NotBeNull();
+            method.GetParameters().Should().HaveCountGreaterThanOrEqualTo(2);
+            method.GetParameters()[0].ParameterType.Should().Be(typeof(long));
+            method.GetParameters()[1].ParameterType.Should().Be(typeof(string));
+            method.ReturnType.Should().Be(typeof(Task));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_NavigateToMainScreenAsync_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var method = botType.GetMethod("NavigateToMainScreenAsync");
+            
+            // Assert
+            method.Should().NotBeNull();
+            method.GetParameters().Should().HaveCountGreaterThanOrEqualTo(1);
+            method.GetParameters()[0].ParameterType.Should().Be(typeof(long));
+            method.ReturnType.Should().Be(typeof(Task));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_TryGetScreen_IsImplemented()
+        {
+            // Verify the method is implemented
+            var botType = typeof(FluentTelegramBot);
+            var method = botType.GetMethod("TryGetScreen");
+            
+            // Assert
+            method.Should().NotBeNull();
+            method.GetParameters().Should().HaveCount(2);
+            method.GetParameters()[0].ParameterType.Should().Be(typeof(string));
+            method.GetParameters()[1].ParameterType.Should().Be(typeof(Models.Screen).MakeByRefType());
+            method.ReturnType.Should().Be(typeof(bool));
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_MainScreen_PropertyExists()
+        {
+            // Verify the property exists
+            var botType = typeof(FluentTelegramBot);
+            var property = botType.GetProperty("MainScreen");
+            
+            // Assert
+            property.Should().NotBeNull();
+            property.PropertyType.Should().Be(typeof(Models.Screen));
+            property.CanRead.Should().BeTrue();
+            property.CanWrite.Should().BeFalse();
+        }
+        
+        [Fact]
+        public void FluentTelegramBot_ScreenManager_PropertyExists()
+        {
+            // Verify the property exists
+            var botType = typeof(FluentTelegramBot);
+            var property = botType.GetProperty("ScreenManager");
+            
+            // Assert
+            property.Should().NotBeNull();
+            property.PropertyType.Should().Be(typeof(Models.ScreenManager));
+            property.CanRead.Should().BeTrue();
+            property.CanWrite.Should().BeFalse();
+        }
     }
 } 
