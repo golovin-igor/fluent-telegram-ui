@@ -37,7 +37,7 @@ var bot = new TelegramBotBuilder()
 // Create a fluent-style message
 var message = new MessageBuilder()
     .WithText("Hello, World!")
-    .WithStyle(FluentStyle.Material)
+    .WithStyle(FluentStyle.Modern)
     .WithButton("Click Me", "callback_data")
     .Build();
 
@@ -51,7 +51,7 @@ await bot.SendMessageAsync(message);
 ```csharp
 var menu = new MenuBuilder()
     .WithTitle("Main Menu")
-    .WithStyle(FluentStyle.Material)
+    .WithStyle(FluentStyle.Modern)
     .AddButton("Profile", "profile")
     .AddButton("Settings", "settings")
     .AddButton("Help", "help")
@@ -70,32 +70,41 @@ var card = new CardBuilder()
     .Build();
 ```
 
+## Project Structure
+
+The project is organized into several key namespaces:
+
+- `FluentTelegramUI` - Core functionality and entry points
+- `FluentTelegramUI.Builders` - Builder classes for creating UI components
+- `FluentTelegramUI.Models` - Data models and entities
+- `FluentTelegramUI.Handlers` - Update handlers and bot event processing
+
 ## TODO
 
 ### High Priority
-- [ ] Implement core Fluent UI components (Buttons, Cards, Menus)
-- [ ] Create basic Telegram bot integration
+- [x] Implement core Fluent UI components (Buttons, Cards, Menus)
+- [x] Create basic Telegram bot integration
 - [ ] Set up CI/CD pipeline
-- [ ] Add unit tests for core components
+- [x] Add unit tests for core components
 - [ ] Create NuGet package
 
 ### UI Components
-- [ ] Add support for custom themes
+- [x] Add support for custom themes (via FluentStyle)
 - [ ] Implement responsive grid layouts
 - [ ] Create reusable animation components
-- [ ] Add support for custom fonts and styles
+- [x] Add support for custom fonts and styles
 - [ ] Implement accessibility features
 
 ### Bot Features
-- [ ] Add support for inline keyboards
+- [x] Add support for inline keyboards
 - [ ] Implement conversation flow management
 - [ ] Create state management system
-- [ ] Add support for media messages
-- [ ] Implement error handling and retry mechanisms
+- [x] Add support for media messages
+- [x] Implement error handling and retry mechanisms
 
 ### Documentation
 - [ ] Create detailed API documentation
-- [ ] Add more code examples
+- [x] Add code examples
 - [ ] Create a getting started guide
 - [ ] Add troubleshooting section
 - [ ] Create contribution guidelines
@@ -106,6 +115,14 @@ var card = new CardBuilder()
 - [ ] Implement secure token storage
 - [ ] Add request validation
 - [ ] Optimize message handling
+
+## Recent Updates
+
+- Reorganized handlers into a dedicated `Handlers` namespace
+- Updated testing framework to focus on behavior rather than implementation details
+- Renamed `FluentStyle.Material` to `FluentStyle.Modern` for better design alignment
+- Improved error handling in the bot initialization process
+- Enhanced test suite with more robust testing methods
 
 ## Contributing
 

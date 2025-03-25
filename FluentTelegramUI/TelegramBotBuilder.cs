@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FluentTelegramUI.Models;
+using FluentTelegramUI.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -16,6 +17,8 @@ namespace FluentTelegramUI
         private string _token = string.Empty;
         private FluentStyle _defaultStyle = FluentStyle.Default;
         private readonly Dictionary<Type, Type> _services = new();
+        private IFluentUpdateHandler? _updateHandler;
+        private bool _autoStartReceiving = false;
         
         /// <summary>
         /// Sets the Telegram bot token
@@ -36,6 +39,27 @@ namespace FluentTelegramUI
         public TelegramBotBuilder WithFluentUI(FluentStyle style = FluentStyle.Default)
         {
             _defaultStyle = style;
+            return this;
+        }
+        
+        /// <summary>
+        /// Sets the update handler for the bot
+        /// </summary>
+        /// <param name="updateHandler">The update handler to use</param>
+        /// <returns>The TelegramBotBuilder instance for method chaining</returns>
+        public TelegramBotBuilder WithUpdateHandler(IFluentUpdateHandler updateHandler)
+        {
+            _updateHandler = updateHandler;
+            return this;
+        }
+        
+        /// <summary>
+        /// Enables automatic start of receiving updates when the bot is built
+        /// </summary>
+        /// <returns>The TelegramBotBuilder instance for method chaining</returns>
+        public TelegramBotBuilder WithAutoStartReceiving()
+        {
+            _autoStartReceiving = true;
             return this;
         }
         
@@ -82,6 +106,14 @@ namespace FluentTelegramUI
             // Add ITelegramBotClient
             serviceCollection.AddSingleton<ITelegramBotClient>(new TelegramBotClient(_token));
             
+            // We can't add FluentStyle as a singleton since it's an enum, not a reference type
+            
+            // Add update handler if provided
+            if (_updateHandler != null)
+            {
+                serviceCollection.AddSingleton<IFluentUpdateHandler>(_updateHandler);
+            }
+            
             // Register services
             foreach (var service in _services)
             {
@@ -91,7 +123,16 @@ namespace FluentTelegramUI
             // Build service provider manually
             var serviceProvider = serviceCollection.BuildServiceProvider();
             
-            return new FluentTelegramBot(serviceProvider);
+            // Create bot instance
+            var bot = new FluentTelegramBot(serviceProvider);
+            
+            // Start receiving updates if enabled
+            if (_autoStartReceiving)
+            {
+                bot.StartReceiving();
+            }
+            
+            return bot;
         }
     }
 } 

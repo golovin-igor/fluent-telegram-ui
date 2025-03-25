@@ -70,12 +70,12 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new MenuBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var menu = builder
-                .WithTitle("Main Menu")
-                .AddButton("Button", "button")
+                .WithTitle("Menu")
+                .AddButton("Button 1", "callback_1")
                 .WithStyle(style)
                 .Build();
             
@@ -88,19 +88,18 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new MenuBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var menu = builder
-                .WithTitle("Main Menu")
-                .AddButton("Button 1", "button1")
-                .AddButton("Button 2", "button2")
+                .WithTitle("Menu")
+                .AddButton("Button 1", "callback_1")
+                .AddButton("Button 2", "callback_2")
                 .WithStyle(style)
                 .Build();
             
             // Assert
-            Assert.Equal(style, menu.Buttons[0].Style);
-            Assert.Equal(style, menu.Buttons[1].Style);
+            Assert.All(menu.Buttons, button => Assert.Equal(style, button.Style));
         }
         
         [Fact]

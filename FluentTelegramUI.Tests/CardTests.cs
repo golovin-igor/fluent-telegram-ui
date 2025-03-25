@@ -136,11 +136,12 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new CardBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var card = builder
-                .WithTitle("Product Card")
+                .WithTitle("Card Title")
+                .WithDescription("Card Description")
                 .WithStyle(style)
                 .Build();
             
@@ -153,19 +154,19 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new CardBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var card = builder
-                .WithTitle("Product Card")
-                .WithActionButton("Button 1", "button1")
-                .WithActionButton("Button 2", "button2")
+                .WithTitle("Card Title")
+                .WithDescription("Card Description")
+                .WithActionButton("Button 1", "callback_1")
+                .WithActionButton("Button 2", "callback_2")
                 .WithStyle(style)
                 .Build();
             
             // Assert
-            Assert.Equal(style, card.Buttons[0].Style);
-            Assert.Equal(style, card.Buttons[1].Style);
+            Assert.All(card.Buttons, button => Assert.Equal(style, button.Style));
         }
         
         [Fact]

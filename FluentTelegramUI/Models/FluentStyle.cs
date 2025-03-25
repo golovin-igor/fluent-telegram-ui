@@ -1,33 +1,33 @@
 namespace FluentTelegramUI.Models
 {
     /// <summary>
-    /// Defines the visual style for UI components
+    /// Represents the available UI styles for Telegram UI elements
     /// </summary>
     public enum FluentStyle
     {
         /// <summary>
-        /// Default style
+        /// Default style with minimal formatting
         /// </summary>
-        Default,
+        Default = 0,
         
         /// <summary>
-        /// Material design inspired style
+        /// Light style with subtle colors
         /// </summary>
-        Material,
+        Light = 1,
         
         /// <summary>
-        /// Fluent design inspired style
+        /// Dark style with high contrast
         /// </summary>
-        Fluent,
+        Dark = 2,
         
         /// <summary>
-        /// Minimalist style
+        /// Colorful style with vibrant colors
         /// </summary>
-        Minimal,
+        Colorful = 3,
         
         /// <summary>
-        /// Dark theme style
+        /// Modern style with clean design
         /// </summary>
-        Dark
+        Modern = 4
     }
 } 

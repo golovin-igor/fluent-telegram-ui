@@ -62,7 +62,7 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new ButtonBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var button = builder

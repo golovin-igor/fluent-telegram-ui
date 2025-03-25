@@ -1,8 +1,10 @@
 using System.Threading;
 using FluentTelegramUI.Models;
+using FluentTelegramUI.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -18,6 +20,8 @@ namespace FluentTelegramUI
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<FluentTelegramBot> _logger;
         private readonly FluentStyle _defaultStyle;
+        private readonly IFluentUpdateHandler _updateHandler;
+        private CancellationTokenSource? _receivingCts;
         
         /// <summary>
         /// Initializes a new instance of the FluentTelegramBot class
@@ -30,11 +34,28 @@ namespace FluentTelegramUI
             _logger = _serviceProvider.GetService<ILogger<FluentTelegramBot>>() ?? 
                       CreateDefaultLogger();
             _defaultStyle = _serviceProvider.GetService<FluentStyle>();
+            if (_defaultStyle == null)
+            {
+                _defaultStyle = FluentStyle.Default;
+            }
+            
+            // Create an update handler
+            _updateHandler = _serviceProvider.GetService<IFluentUpdateHandler>();
+            if (_updateHandler == null)
+            {
+                var handlerLogger = CreateDefaultLoggerForHandler();
+                _updateHandler = new DefaultFluentUpdateHandler(handlerLogger);
+            }
         }
         
         private ILogger<FluentTelegramBot> CreateDefaultLogger()
         {
             return new Logger<FluentTelegramBot>(LogLevel.Information, string.Empty);
+        }
+        
+        private ILogger<DefaultFluentUpdateHandler> CreateDefaultLoggerForHandler()
+        {
+            return new Logger<DefaultFluentUpdateHandler>(LogLevel.Information, typeof(DefaultFluentUpdateHandler).Name);
         }
         
         /// <summary>
@@ -67,6 +88,66 @@ namespace FluentTelegramUI
         public async Task<Telegram.Bot.Types.Message> SendMessageAsync(Models.Message message, CancellationToken cancellationToken = default)
         {
             return await SendMessageAsync(new ChatId(0), message, cancellationToken);
+        }
+        
+        /// <summary>
+        /// Starts receiving updates from Telegram
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token</param>
+        public void StartReceiving(CancellationToken cancellationToken = default)
+        {
+            _receivingCts = new CancellationTokenSource();
+            
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken, _receivingCts.Token);
+            
+            // Create an update handler
+            var updateHandler = new UpdateHandler(HandleUpdateAsync, HandlePollingErrorAsync);
+            
+            // Start receiving
+            _botClient.StartReceiving(
+                updateHandler: updateHandler,
+                receiverOptions: new ReceiverOptions
+                {
+                    AllowedUpdates = Array.Empty<UpdateType>()
+                },
+                cancellationToken: linkedCts.Token);
+            
+            _logger.LogInformation("Started receiving updates from Telegram");
+        }
+        
+        /// <summary>
+        /// Stops receiving updates from Telegram
+        /// </summary>
+        public void StopReceiving()
+        {
+            if (_receivingCts != null)
+            {
+                _receivingCts.Cancel();
+                _receivingCts.Dispose();
+                _receivingCts = null;
+                
+                _logger.LogInformation("Stopped receiving updates from Telegram");
+            }
+        }
+        
+        private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            if (update.Message is { } message && message.Text is { } messageText)
+            {
+                // Handle text message
+                await _updateHandler.HandleTextMessageAsync(botClient, message, cancellationToken);
+            }
+            else if (update.CallbackQuery is { } callbackQuery)
+            {
+                // Handle callback query
+                await _updateHandler.HandleCallbackQueryAsync(botClient, callbackQuery, cancellationToken);
+            }
+        }
+        
+        private async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            await _updateHandler.HandlePollingErrorAsync(botClient, exception, cancellationToken);
         }
         
         /// <summary>

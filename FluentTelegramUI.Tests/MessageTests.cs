@@ -45,11 +45,11 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new MessageBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var message = builder
-                .WithText("Hello, World!")
+                .WithText("Hello, world!")
                 .WithStyle(style)
                 .Build();
             
@@ -130,19 +130,18 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var builder = new MessageBuilder();
-            var style = FluentStyle.Material;
+            var style = FluentStyle.Modern;
             
             // Act
             var message = builder
-                .WithText("Hello, World!")
-                .WithButton("Button 1", "button1")
-                .WithButton("Button 2", "button2")
+                .WithText("Hello, world!")
+                .WithButton("Button 1", "callback_1")
+                .WithButton("Button 2", "callback_2")
                 .WithStyle(style)
                 .Build();
             
             // Assert
-            Assert.Equal(style, message.Buttons[0].Style);
-            Assert.Equal(style, message.Buttons[1].Style);
+            Assert.All(message.Buttons, button => Assert.Equal(style, button.Style));
         }
         
         [Fact]

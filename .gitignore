@@ -400,3 +400,4 @@ FodyWeavers.xsd
 
 # macOS specific
 .DS_Store 
+FluentTelegramUI.Tests/obj/FluentTelegramUI.Tests.csproj.nuget.dgspec.json
