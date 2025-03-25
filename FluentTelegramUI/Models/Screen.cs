@@ -68,6 +68,18 @@ namespace FluentTelegramUI.Models
         }
         
         /// <summary>
+        /// Adds a text input handler for a specific state
+        /// </summary>
+        /// <param name="stateName">The state name when this handler should be active</param>
+        /// <param name="handler">The handler function that receives the text input</param>
+        /// <returns>The screen instance for method chaining</returns>
+        public Screen OnTextInput(string stateName, Func<string, Task<bool>> handler)
+        {
+            EventHandlers[$"text_input:{stateName}"] = handler;
+            return this;
+        }
+        
+        /// <summary>
         /// Adds a control to the screen
         /// </summary>
         /// <param name="control">The control to add</param>

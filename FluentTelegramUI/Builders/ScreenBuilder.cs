@@ -133,6 +133,18 @@ namespace FluentTelegramUI.Builders
         }
         
         /// <summary>
+        /// Adds a text input handler for a specific state
+        /// </summary>
+        /// <param name="stateName">The state name when this handler should be active</param>
+        /// <param name="handler">The handler function that receives the text input</param>
+        /// <returns>The screen builder instance for method chaining</returns>
+        public ScreenBuilder OnTextInput(string stateName, Func<string, Task<bool>> handler)
+        {
+            _screen.OnTextInput(stateName, handler);
+            return this;
+        }
+        
+        /// <summary>
         /// Creates a navigation button to another screen
         /// </summary>
         /// <param name="text">The button text</param>

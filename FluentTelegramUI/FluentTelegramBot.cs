@@ -30,6 +30,11 @@ namespace FluentTelegramUI
         public ScreenManager ScreenManager => _screenManager;
         
         /// <summary>
+        /// Gets the state machine for managing application state
+        /// </summary>
+        public StateMachine StateMachine => _screenManager.StateMachine;
+        
+        /// <summary>
         /// Gets the main screen from which navigation starts
         /// </summary>
         public Screen? MainScreen => _screenManager.MainScreen;
@@ -248,6 +253,60 @@ namespace FluentTelegramUI
             
             RegisterScreen(screen, isMainScreen);
             return screen;
+        }
+        
+        /// <summary>
+        /// Sets a state variable for the specified chat
+        /// </summary>
+        /// <typeparam name="T">The type of value to set</typeparam>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="key">The state variable key</param>
+        /// <param name="value">The value to set</param>
+        public void SetState<T>(long chatId, string key, T value)
+        {
+            _screenManager.SetState(chatId, key, value);
+        }
+        
+        /// <summary>
+        /// Gets a state variable for the specified chat
+        /// </summary>
+        /// <typeparam name="T">The type of value to retrieve</typeparam>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="key">The state variable key</param>
+        /// <param name="defaultValue">The default value if the state doesn't exist</param>
+        /// <returns>The state value or default</returns>
+        public T GetState<T>(long chatId, string key, T defaultValue = default)
+        {
+            return _screenManager.GetState(chatId, key, defaultValue);
+        }
+        
+        /// <summary>
+        /// Clears all state for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        public void ClearState(long chatId)
+        {
+            _screenManager.ClearState(chatId);
+        }
+        
+        /// <summary>
+        /// Gets the current workflow state name for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <returns>The current state name or null</returns>
+        public string GetCurrentState(long chatId)
+        {
+            return _screenManager.GetCurrentState(chatId);
+        }
+        
+        /// <summary>
+        /// Sets the current workflow state for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="stateName">The state name</param>
+        public void SetCurrentState(long chatId, string stateName)
+        {
+            _screenManager.SetCurrentState(chatId, stateName);
         }
         
         /// <summary>

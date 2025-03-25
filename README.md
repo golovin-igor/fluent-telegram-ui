@@ -90,6 +90,53 @@ if (bot.TryGetScreen("Main Menu", out var mainScreen) &&
 }
 ```
 
+## State Management System
+
+The FluentTelegramUI framework includes a powerful state management system to help manage complex conversation flows and maintain stateful interactions with users:
+
+```csharp
+// Accessing state from the bot
+bot.SetState(chatId, "username", "JohnDoe");
+string username = bot.GetState<string>(chatId, "username");
+
+// Setting conversation state
+bot.SetCurrentState(chatId, "awaitingEmail");
+if (bot.GetCurrentState(chatId) == "awaitingEmail")
+{
+    // Handle email input
+}
+
+// Clearing state
+bot.ClearState(chatId);
+```
+
+### Multi-Step Forms
+
+You can combine StateMachine with Screen navigation to create multi-step input forms:
+
+```csharp
+// Create screens for each step
+var nameScreen = bot.CreateScreen("Name Input", new Message { Text = "Enter your name:" });
+var emailScreen = bot.CreateScreen("Email Input", new Message { Text = "Enter your email:" });
+
+// Set up text input handling based on state
+nameScreen.OnTextInput("awaitingName", async (name) => 
+{
+    bot.SetState(chatId, "name", name);
+    bot.SetCurrentState(chatId, "awaitingEmail");
+    await bot.NavigateToScreenAsync(chatId, emailScreen.Id);
+    return true;
+});
+
+emailScreen.OnTextInput("awaitingEmail", async (email) => 
+{
+    bot.SetState(chatId, "email", email);
+    bot.SetCurrentState(chatId, "complete");
+    // Show completion screen with collected data
+    return true;
+});
+```
+
 ## Examples
 
 ### Creating a Simple Menu

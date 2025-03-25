@@ -17,11 +17,17 @@ namespace FluentTelegramUI.Models
         private readonly ILogger<ScreenManager> _logger;
         private readonly Dictionary<long, NavigationState> _navigationStates = new();
         private readonly Dictionary<string, Screen> _registeredScreens = new();
+        private readonly StateMachine _stateMachine;
         
         /// <summary>
         /// Gets the main screen from which navigation starts
         /// </summary>
         public Screen? MainScreen { get; private set; }
+        
+        /// <summary>
+        /// Gets the state machine instance
+        /// </summary>
+        public StateMachine StateMachine => _stateMachine;
         
         /// <summary>
         /// Initializes a new instance of the ScreenManager class
@@ -32,6 +38,20 @@ namespace FluentTelegramUI.Models
         {
             _botClient = botClient;
             _logger = logger;
+            _stateMachine = new StateMachine();
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the ScreenManager class
+        /// </summary>
+        /// <param name="botClient">The bot client</param>
+        /// <param name="logger">The logger</param>
+        /// <param name="stateMachine">The state machine to use</param>
+        public ScreenManager(ITelegramBotClient botClient, ILogger<ScreenManager> logger, StateMachine stateMachine)
+        {
+            _botClient = botClient;
+            _logger = logger;
+            _stateMachine = stateMachine;
         }
         
         /// <summary>
@@ -98,6 +118,9 @@ namespace FluentTelegramUI.Models
             // Update navigation state
             var navState = GetOrCreateNavigationState(chatId);
             navState.CurrentScreenId = screenId;
+            
+            // Update state machine with current screen
+            _stateMachine.SetCurrentScreen(chatId, screenId);
             
             // Clear any previous message
             if (navState.LastMessageId != 0)
@@ -252,6 +275,60 @@ namespace FluentTelegramUI.Models
             
             screen = null;
             return false;
+        }
+        
+        /// <summary>
+        /// Sets a state variable for the specified chat
+        /// </summary>
+        /// <typeparam name="T">The type of value to set</typeparam>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="key">The state variable key</param>
+        /// <param name="value">The value to set</param>
+        public void SetState<T>(long chatId, string key, T value)
+        {
+            _stateMachine.SetState(chatId, key, value);
+        }
+        
+        /// <summary>
+        /// Gets a state variable for the specified chat
+        /// </summary>
+        /// <typeparam name="T">The type of value to retrieve</typeparam>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="key">The state variable key</param>
+        /// <param name="defaultValue">The default value if the state doesn't exist</param>
+        /// <returns>The state value or default</returns>
+        public T GetState<T>(long chatId, string key, T defaultValue = default)
+        {
+            return _stateMachine.GetState(chatId, key, defaultValue);
+        }
+        
+        /// <summary>
+        /// Clears all state for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        public void ClearState(long chatId)
+        {
+            _stateMachine.ClearState(chatId);
+        }
+        
+        /// <summary>
+        /// Gets the current workflow state name for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <returns>The current state name or null</returns>
+        public string GetCurrentState(long chatId)
+        {
+            return _stateMachine.GetState<string>(chatId, "state");
+        }
+        
+        /// <summary>
+        /// Sets the current workflow state for the specified chat
+        /// </summary>
+        /// <param name="chatId">The chat ID</param>
+        /// <param name="stateName">The state name</param>
+        public void SetCurrentState(long chatId, string stateName)
+        {
+            _stateMachine.SetState(chatId, "state", stateName);
         }
         
         /// <summary>

@@ -36,6 +36,36 @@ namespace FluentTelegramUI.Handlers
             {
                 // Navigate to main screen for new users
                 await _screenManager.NavigateToMainScreenAsync(message.Chat.Id, cancellationToken);
+                
+                // Reset the state machine for this chat
+                _screenManager.ClearState(message.Chat.Id);
+                _screenManager.SetCurrentState(message.Chat.Id, "initial");
+                return;
+            }
+            
+            // Get current conversation state
+            var currentState = _screenManager.GetCurrentState(message.Chat.Id);
+            var currentScreen = _screenManager.StateMachine.GetCurrentScreen(message.Chat.Id);
+            
+            // Handle text input based on the current state
+            if (!string.IsNullOrEmpty(currentState) && !string.IsNullOrEmpty(currentScreen) && 
+                _screenManager.GetScreenById(currentScreen, out var screen))
+            {
+                // Check if the screen has a text input handler for the current state
+                var handlerKey = $"text_input:{currentState}";
+                if (screen.EventHandlers.TryGetValue(handlerKey, out var handler))
+                {
+                    // Store the input text in state
+                    _screenManager.SetState(message.Chat.Id, "last_input", message.Text);
+                    
+                    // Call the handler
+                    bool result = await handler(message.Text);
+                    if (result)
+                    {
+                        // Refresh the screen if the handler returns true
+                        await _screenManager.NavigateToScreenAsync(message.Chat.Id, currentScreen, cancellationToken);
+                    }
+                }
             }
         }
         
