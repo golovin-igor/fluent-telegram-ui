@@ -20,7 +20,7 @@ namespace FluentTelegramUI
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<FluentTelegramBot> _logger;
         private readonly FluentStyle _defaultStyle;
-        private readonly IFluentUpdateHandler _updateHandler;
+        private IFluentUpdateHandler _updateHandler;
         private readonly ScreenManager _screenManager;
         private CancellationTokenSource? _receivingCts;
         

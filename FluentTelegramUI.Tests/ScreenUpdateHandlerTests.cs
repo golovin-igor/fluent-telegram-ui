@@ -98,7 +98,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<CancellationToken>()
-            )).ReturnsAsync(true);
+            )).Returns(Task.FromResult(true));
             
             // Act
             await _handler.HandleCallbackQueryAsync(botClientMock.Object, callbackQuery, cancellationToken);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -114,7 +115,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             // Act
             await _screenManager.NavigateToMainScreenAsync(123);
@@ -143,7 +144,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             // Act
             await _screenManager.NavigateToScreenAsync(123, screen.Id);
@@ -171,7 +172,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             // Act
             await _screenManager.NavigateToScreenAsync(123, nonExistentScreenId);
@@ -213,7 +214,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
@@ -270,7 +271,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
@@ -331,7 +332,7 @@ namespace FluentTelegramUI.Tests
                 It.IsAny<object>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
-            .ReturnsAsync(new Message());
+            .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(

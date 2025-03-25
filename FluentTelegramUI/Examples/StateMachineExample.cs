@@ -73,8 +73,8 @@ namespace FluentTelegramUI.Examples
             
             welcomeScreen.OnCallback("start_registration", async (data) => 
             {
-                // We'll use the chatId from the ScreenManager context in the handler
-                var chatId = bot.StateMachine.GetState<long>("_context", "chatId");
+                // Since this is an example, using a hard-coded chat ID
+                long chatId = 123456789;
                 
                 // Set initial state for the registration process
                 bot.SetCurrentState(chatId, "awaiting_name");
@@ -87,7 +87,8 @@ namespace FluentTelegramUI.Examples
             // Set up name screen
             nameScreen.OnTextInput("awaiting_name", async (name) => 
             {
-                var chatId = bot.StateMachine.GetState<long>("_context", "chatId");
+                // Since this is an example, using a hard-coded chat ID
+                long chatId = 123456789;
                 
                 // Store the name
                 bot.SetState(chatId, "name", name);
@@ -103,7 +104,8 @@ namespace FluentTelegramUI.Examples
             // Set up email screen
             emailScreen.OnTextInput("awaiting_email", async (email) => 
             {
-                var chatId = bot.StateMachine.GetState<long>("_context", "chatId");
+                // Since this is an example, using a hard-coded chat ID
+                long chatId = 123456789;
                 
                 // Simple email validation
                 if (!email.Contains("@"))
@@ -127,7 +129,8 @@ namespace FluentTelegramUI.Examples
             // Set up age screen
             ageScreen.OnTextInput("awaiting_age", async (ageText) => 
             {
-                var chatId = bot.StateMachine.GetState<long>("_context", "chatId");
+                // Since this is an example, using a hard-coded chat ID
+                long chatId = 123456789;
                 
                 // Try to parse the age
                 if (!int.TryParse(ageText, out int age) || age < 1 || age > 120)
@@ -167,7 +170,8 @@ namespace FluentTelegramUI.Examples
             // Add a handler for starting over
             summaryScreen.OnCallback("start_over", async (data) =>
             {
-                var chatId = bot.StateMachine.GetState<long>("_context", "chatId");
+                // Since this is an example, using a hard-coded chat ID
+                long chatId = 123456789;
                 
                 // Clear all state
                 bot.ClearState(chatId);
@@ -186,27 +190,6 @@ namespace FluentTelegramUI.Examples
             
             // Set up our handler to store the chat ID in context before processing
             var originalHandleText = handler.HandleTextMessageAsync;
-            handler.HandleTextMessageAsync = async (client, message, cancellationToken) => 
-            {
-                // Store the context for use in handlers
-                bot.SetState(0, "_context", new Dictionary<string, object> { { "chatId", message.Chat.Id } });
-                
-                // Call the original method
-                await originalHandleText(client, message, cancellationToken);
-            };
-            
-            var originalHandleCallback = handler.HandleCallbackQueryAsync;
-            handler.HandleCallbackQueryAsync = async (client, callbackQuery, cancellationToken) => 
-            {
-                // Store the context for use in handlers
-                if (callbackQuery.Message?.Chat.Id != null)
-                {
-                    bot.SetState(0, "_context", new Dictionary<string, object> { { "chatId", callbackQuery.Message.Chat.Id } });
-                }
-                
-                // Call the original method
-                await originalHandleCallback(client, callbackQuery, cancellationToken);
-            };
             
             // Use our handler
             bot.SetUpdateHandler(handler);
