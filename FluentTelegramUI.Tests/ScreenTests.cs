@@ -17,6 +17,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             screen.Id.Should().NotBeNullOrEmpty();
+            screen.Id.Length.Should().BeLessOrEqualTo(7);
             screen.Title.Should().BeEmpty();
             screen.Content.Should().NotBeNull();
             screen.Controls.Should().NotBeNull().And.BeEmpty();

@@ -10,7 +10,7 @@ namespace FluentTelegramUI.Models
         /// <summary>
         /// Unique identifier for the control
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = IdGenerator.GenerateShortId();
         
         /// <summary>
         /// The style of the control

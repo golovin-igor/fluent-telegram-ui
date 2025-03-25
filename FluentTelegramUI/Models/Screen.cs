@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using shortid;
 
 namespace FluentTelegramUI.Models
 {
@@ -11,7 +13,7 @@ namespace FluentTelegramUI.Models
         /// <summary>
         /// Unique identifier for the screen
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = IdGenerator.GenerateShortId();
         
         /// <summary>
         /// The title of the screen
