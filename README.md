@@ -12,6 +12,7 @@ A modern, fluent-style UI framework for creating Telegram bots using C# .NET. Th
 - 📦 NuGet package available for easy integration
 - 🔄 Screen-based navigation with back functionality
 - 🎛️ Interactive UI controls with callback handling
+- 🧠 Integrated state machine for managing conversation flows
 
 ## Getting Started
 
@@ -30,20 +31,38 @@ dotnet add package FluentTelegramUI
 
 ```csharp
 using FluentTelegramUI;
+using Microsoft.Extensions.DependencyInjection;
 
+// Configure services
+var services = new ServiceCollection()
+    .AddSingleton<ITelegramBotClient>(new TelegramBotClient("YOUR_BOT_TOKEN"))
+    .AddLogging()
+    .BuildServiceProvider();
+
+// Create a bot
 var bot = new TelegramBotBuilder()
-    .WithToken("YOUR_BOT_TOKEN")
+    .WithServiceProvider(services)
     .WithFluentUI()
     .Build();
 
 // Create a fluent-style message
-var message = new MessageBuilder()
-    .WithText("Hello, World!")
-    .WithStyle(FluentStyle.Modern)
-    .WithButton("Click Me", "callback_data")
-    .Build();
+var message = new Message
+{
+    Text = "Hello, World!",
+    ParseMarkdown = true
+};
 
-await bot.SendMessageAsync(message);
+message.Buttons.Add(new Button
+{
+    Text = "Click Me",
+    CallbackData = "click_action"
+});
+
+// Send the message
+await bot.SendMessageAsync(123456789, message);
+
+// Start receiving updates
+bot.StartReceiving();
 ```
 
 ## Screen System
@@ -51,146 +70,171 @@ await bot.SendMessageAsync(message);
 The Screen system allows you to create interactive UI screens with navigation and callbacks:
 
 ```csharp
-// Create a bot with screens
-var bot = new TelegramBotBuilder()
-    .WithToken("YOUR_BOT_TOKEN")
-    .WithFluentUI()
-    .AddScreen("Main Menu", sb => {
-        sb.WithContent("Welcome to the main menu!", true)
-          .AddButton("Settings", "view_settings")
-          .AddButton("Profile", "view_profile")
-          .WithButtonsPerRow(1)
-          .AsMainScreen(); // Mark as the main screen
-    })
-    .AddScreen("Settings", sb => {
-        sb.WithContent("Configure settings:", true)
-          .AddButton("Dark Mode", "toggle_dark_mode")
-          .AddButton("Notifications", "toggle_notifications")
-          .WithButtonsPerRow(2)
-          .OnCallback("toggle_dark_mode", async (data) => {
-              // Handle dark mode toggle
-              return true; // Refresh screen
-          });
-    })
-    .WithAutoStartReceiving()
-    .Build();
-
-// Configure navigation between screens
-if (bot.TryGetScreen("Main Menu", out var mainScreen) && 
-    bot.TryGetScreen("Settings", out var settingsScreen))
+// Create screens
+var mainScreen = new Screen
 {
-    // Set up navigation
-    mainScreen.OnCallback("view_settings", async (data) => {
-        await bot.NavigateToScreenAsync(chatId, settingsScreen.Id);
-        return true;
-    });
-    
-    // Set parent for back navigation
-    settingsScreen.WithParent(mainScreen);
-}
+    Title = "Main Menu",
+    Content = new Message
+    {
+        Text = "Welcome to the main menu!",
+        ParseMarkdown = true
+    }
+};
+
+var settingsScreen = new Screen
+{
+    Title = "Settings",
+    Content = new Message
+    {
+        Text = "Configure your settings:",
+        ParseMarkdown = true
+    }
+};
+
+// Add buttons to screens
+mainScreen.Content.Buttons.Add(new Button
+{
+    Text = "Settings",
+    CallbackData = "view_settings"
+});
+
+settingsScreen.Content.Buttons.Add(new Button
+{
+    Text = "Dark Mode",
+    CallbackData = "toggle_dark_mode"
+});
+
+// Register screens with the bot
+bot.RegisterScreen(mainScreen, true); // Set as main screen
+bot.RegisterScreen(settingsScreen);
+
+// Set up navigation
+mainScreen.OnCallback("view_settings", async (data) => 
+{
+    await bot.NavigateToScreenAsync(123456789, settingsScreen.Id);
+    return true;
+});
+
+// Set parent for back navigation
+settingsScreen.WithParent(mainScreen);
+
+// Set up callback for toggle_dark_mode action
+settingsScreen.OnCallback("toggle_dark_mode", async (data) => {
+    // Handle dark mode toggle
+    return true; // Refresh screen
+});
 ```
 
-## State Management System
+## State Machine
 
-The FluentTelegramUI framework includes a powerful state management system to help manage complex conversation flows and maintain stateful interactions with users:
+FluentTelegramUI includes a powerful state machine for managing conversation flows:
 
 ```csharp
-// Accessing state from the bot
-bot.SetState(chatId, "username", "JohnDoe");
-string username = bot.GetState<string>(chatId, "username");
+// Set state for a chat
+bot.StateMachine.SetState(chatId, "username", "JohnDoe");
+string username = bot.StateMachine.GetState<string>(chatId, "username");
 
-// Setting conversation state
-bot.SetCurrentState(chatId, "awaitingEmail");
-if (bot.GetCurrentState(chatId) == "awaitingEmail")
+// Set current conversation state
+bot.StateMachine.SetState(chatId, "awaiting_email");
+
+// Check current state
+if (bot.StateMachine.IsInState(chatId, "awaiting_email"))
 {
     // Handle email input
 }
 
-// Clearing state
-bot.ClearState(chatId);
+// Clear state
+bot.StateMachine.ClearState(chatId);
 ```
 
-### Multi-Step Forms
+### Multi-Step Forms Example
 
 You can combine StateMachine with Screen navigation to create multi-step input forms:
 
 ```csharp
-// Create screens for each step
-var nameScreen = bot.CreateScreen("Name Input", new Message { Text = "Enter your name:" });
-var emailScreen = bot.CreateScreen("Email Input", new Message { Text = "Enter your email:" });
+// Create screens for registration flow
+var welcomeScreen = new Screen { 
+    Title = "Welcome", 
+    Content = new Message { 
+        Text = "Welcome to the registration process. Click below to start:", 
+        ParseMarkdown = true 
+    } 
+};
 
-// Set up text input handling based on state
-nameScreen.OnTextInput("awaitingName", async (name) => 
+var nameScreen = new Screen { 
+    Title = "Name Input", 
+    Content = new Message { 
+        Text = "Please enter your name:", 
+        ParseMarkdown = true 
+    } 
+};
+
+var emailScreen = new Screen { 
+    Title = "Email Input", 
+    Content = new Message { 
+        Text = "Please enter your email:", 
+        ParseMarkdown = true 
+    } 
+};
+
+// Add button to welcome screen
+welcomeScreen.Content.Buttons.Add(new Button { 
+    Text = "Start Registration", 
+    CallbackData = "start_registration" 
+});
+
+// Register all screens
+bot.RegisterScreen(welcomeScreen, true);
+bot.RegisterScreen(nameScreen);
+bot.RegisterScreen(emailScreen);
+
+// Set up handlers
+welcomeScreen.OnCallback("start_registration", async (data) => 
 {
-    bot.SetState(chatId, "name", name);
-    bot.SetCurrentState(chatId, "awaitingEmail");
+    long chatId = 123456789; // In real app, you'd get this from context
+    
+    // Set initial state for the registration process
+    bot.StateMachine.SetState(chatId, "awaiting_name");
+    
+    // Navigate to the name input screen
+    await bot.NavigateToScreenAsync(chatId, nameScreen.Id);
+    return true;
+});
+
+// Set up name input handler
+nameScreen.OnTextInput("awaiting_name", async (name) => 
+{
+    long chatId = 123456789; // In real app, you'd get this from context
+    
+    // Store the name
+    bot.StateMachine.SetState(chatId, "name", name);
+    
+    // Transition to next state
+    bot.StateMachine.SetState(chatId, "awaiting_email");
+    
+    // Navigate to the email screen
     await bot.NavigateToScreenAsync(chatId, emailScreen.Id);
     return true;
 });
 
-emailScreen.OnTextInput("awaitingEmail", async (email) => 
+// Set up email input handler
+emailScreen.OnTextInput("awaiting_email", async (email) => 
 {
-    bot.SetState(chatId, "email", email);
-    bot.SetCurrentState(chatId, "complete");
-    // Show completion screen with collected data
+    long chatId = 123456789; // In real app, you'd get this from context
+    
+    // Store the email
+    bot.StateMachine.SetState(chatId, "email", email);
+    
+    // Complete the process
+    bot.StateMachine.SetState(chatId, "complete");
+    
+    // Display completion message
     return true;
 });
-```
 
-## Examples
-
-### Creating a Simple Menu
-
-```csharp
-var menu = new MenuBuilder()
-    .WithTitle("Main Menu")
-    .WithStyle(FluentStyle.Modern)
-    .AddButton("Profile", "profile")
-    .AddButton("Settings", "settings")
-    .AddButton("Help", "help")
-    .Build();
-```
-
-### Creating a Card Layout
-
-```csharp
-var card = new CardBuilder()
-    .WithTitle("Product Card")
-    .WithDescription("This is a beautiful product card")
-    .WithImage("product.jpg")
-    .WithPrice("$99.99")
-    .WithActionButton("Buy Now", "buy")
-    .Build();
-```
-
-### Creating Interactive Screens
-
-```csharp
-// Create a counter screen
-var counterScreen = bot.CreateScreen("Counter", new Message
-{
-    Text = "Current counter value: 0",
-    ParseMarkdown = true
-});
-
-// Add controls and event handlers
-counterScreen.AddControl(new ButtonGroup(new List<Button>
-{
-    new Button { Text = "Increment", CallbackData = "counter:increment" },
-    new Button { Text = "Decrement", CallbackData = "counter:decrement" },
-    new Button { Text = "Reset", CallbackData = "counter:reset" }
-}, 2));
-
-// Variable to track state
-var counter = 0;
-
-// Add event handlers
-counterScreen.OnCallback("counter:increment", async (data) => 
-{
-    counter++;
-    counterScreen.Content.Text = $"Current counter value: {counter}";
-    return true; // Return true to refresh the screen
-});
+// Set up update handler for the bot to handle text inputs
+var handler = new ScreenUpdateHandler(loggerFactory.CreateLogger<ScreenUpdateHandler>(), bot.ScreenManager);
+bot.SetUpdateHandler(handler);
 ```
 
 ## Project Structure
@@ -198,64 +242,36 @@ counterScreen.OnCallback("counter:increment", async (data) =>
 The project is organized into several key namespaces:
 
 - `FluentTelegramUI` - Core functionality and entry points
-- `FluentTelegramUI.Builders` - Builder classes for creating UI components
-- `FluentTelegramUI.Models` - Data models and entities
+- `FluentTelegramUI.Models` - Data models including Screen and StateMachine
 - `FluentTelegramUI.Handlers` - Update handlers and bot event processing
 
-## TODO
+## Dependencies
 
-### High Priority
-- [x] Implement core Fluent UI components (Buttons, Cards, Menus)
-- [x] Create basic Telegram bot integration
-- [ ] Set up CI/CD pipeline
-- [x] Add unit tests for core components
-- [ ] Create NuGet package
+- Microsoft.Extensions.DependencyInjection (7.0.0)
+- Microsoft.Extensions.Logging (7.0.0)
+- Telegram.Bot (19.0.0)
+- shortid (4.0.0)
 
-### UI Components
-- [x] Add support for custom themes (via FluentStyle)
-- [x] Implement screen-based UI navigation
-- [ ] Implement responsive grid layouts
-- [ ] Create reusable animation components
-- [x] Add support for custom fonts and styles
-- [ ] Implement accessibility features
+## Status
 
-### Bot Features
-- [x] Add support for inline keyboards
-- [x] Implement conversation flow management via screens
-- [x] Create state management system
-- [x] Add support for media messages
-- [x] Implement error handling and retry mechanisms
-- [x] Add screen navigation with back functionality
+This project is currently in development. While core functionality is working, there are still features to be implemented and improvements to be made.
 
-### Documentation
-- [ ] Create detailed API documentation
-- [x] Add code examples
-- [x] Create a getting started guide
-- [ ] Add troubleshooting section
-- [ ] Create contribution guidelines
+### Completed
+- [x] Core Telegram Bot integration
+- [x] Screen-based UI components
+- [x] Navigation system with back functionality
+- [x] State machine for conversation management
+- [x] Update handlers for processing bot events
 
-### Performance & Security
-- [ ] Implement caching system
-- [ ] Add rate limiting support
-- [ ] Implement secure token storage
-- [ ] Add request validation
-- [ ] Optimize message handling
-
-## Recent Updates
-
-- Added screen system with navigation and callback handling
-- Implemented main screen functionality as entry point for users
-- Added back navigation with customizable text and behavior
-- Enhanced UI controls with event handling capabilities
-- Reorganized handlers into a dedicated `Handlers` namespace
-- Updated testing framework to focus on behavior rather than implementation details
-- Renamed `FluentStyle.Material` to `FluentStyle.Modern` for better design alignment
-- Improved error handling in the bot initialization process
-- Enhanced test suite with more robust testing methods
+### In Progress
+- [ ] Complete documentation
+- [ ] Publish NuGet package
+- [ ] Add more UI controls and components
+- [ ] Implement more examples
 
 ## Contributing
 
-We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! If you find bugs or have feature requests, please open an issue on GitHub.
 
 ## License
 
