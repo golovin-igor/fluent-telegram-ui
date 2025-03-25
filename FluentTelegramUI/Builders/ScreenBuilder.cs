@@ -126,7 +126,7 @@ namespace FluentTelegramUI.Builders
         /// <param name="callbackData">The callback data to handle</param>
         /// <param name="handler">The handler function</param>
         /// <returns>The screen builder instance for method chaining</returns>
-        public ScreenBuilder OnCallback(string callbackData, Func<string, Task<bool>> handler)
+        public ScreenBuilder OnCallback(string callbackData, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
             _screen.OnCallback(callbackData, handler);
             return this;
@@ -138,7 +138,7 @@ namespace FluentTelegramUI.Builders
         /// <param name="stateName">The state name when this handler should be active</param>
         /// <param name="handler">The handler function that receives the text input</param>
         /// <returns>The screen builder instance for method chaining</returns>
-        public ScreenBuilder OnTextInput(string stateName, Func<string, Task<bool>> handler)
+        public ScreenBuilder OnTextInput(string stateName, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
             _screen.OnTextInput(stateName, handler);
             return this;

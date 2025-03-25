@@ -106,13 +106,13 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -135,13 +135,13 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -163,13 +163,13 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -198,20 +198,20 @@ namespace FluentTelegramUI.Tests
             {
                 Id = "callback-id",
                 Data = $"screen:{settingsScreen.Id}",
-                Message = new Message { Chat = new Chat { Id = 123 } }
+                Message = new Telegram.Bot.Types.Message { Chat = new Chat { Id = 123 } }
             };
             
             var messageCount = 0;
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -220,9 +220,9 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<bool>(), 
+                It.IsAny<bool?>(), 
                 It.IsAny<string>(), 
-                It.IsAny<int>(), 
+                It.IsAny<int?>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => callbackAnswerCount++)
             .ReturnsAsync(true);
@@ -255,20 +255,20 @@ namespace FluentTelegramUI.Tests
             {
                 Id = "callback-id",
                 Data = "back",
-                Message = new Message { Chat = new Chat { Id = 123 } }
+                Message = new Telegram.Bot.Types.Message { Chat = new Chat { Id = 123 } }
             };
             
             var messageCount = 0;
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -277,9 +277,9 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<bool>(), 
+                It.IsAny<bool?>(), 
                 It.IsAny<string>(), 
-                It.IsAny<int>(), 
+                It.IsAny<int?>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => callbackAnswerCount++)
             .ReturnsAsync(true);
@@ -304,9 +304,11 @@ namespace FluentTelegramUI.Tests
             // Arrange
             var screen = new Screen { Title = "Test Screen" };
             var handlerCalled = false;
+            Dictionary<string, object> contextReceived = null;
             
-            screen.OnCallback("test_action", async (data) => {
+            screen.OnCallback("test_action", async (data, context) => {
                 handlerCalled = true;
+                contextReceived = context;
                 return true;
             });
             
@@ -316,20 +318,21 @@ namespace FluentTelegramUI.Tests
             {
                 Id = "callback-id",
                 Data = "test_action",
-                Message = new Message { Chat = new Chat { Id = 123 } }
+                Message = new Telegram.Bot.Types.Message { Chat = new Chat { Id = 123 } },
+                From = new User { Id = 456, Username = "testuser", FirstName = "Test", LastName = "User" }
             };
             
             var messageCount = 0;
             _botClientMock.Setup(m => m.SendTextMessageAsync(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
-                It.IsAny<object>(), 
+                It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
+                It.IsAny<IEnumerable<Telegram.Bot.Types.MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<Telegram.Bot.Types.ReplyMarkups.IReplyMarkup>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => messageCount++)
             .ReturnsAsync(new Telegram.Bot.Types.Message());
@@ -338,9 +341,9 @@ namespace FluentTelegramUI.Tests
             _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<bool>(), 
+                It.IsAny<bool?>(), 
                 It.IsAny<string>(), 
-                It.IsAny<int>(), 
+                It.IsAny<int?>(), 
                 It.IsAny<CancellationToken>()))
             .Callback(() => callbackAnswerCount++)
             .ReturnsAsync(true);
@@ -358,6 +361,87 @@ namespace FluentTelegramUI.Tests
             handlerCalled.Should().BeTrue();
             callbackAnswerCount.Should().Be(1);
             messageCount.Should().Be(1); // Screen should refresh after handler returns true
+            
+            // Verify context parameters
+            contextReceived.Should().NotBeNull();
+            contextReceived["chatId"].Should().Be(123L);
+            contextReceived["userId"].Should().Be(456L);
+            contextReceived["username"].Should().Be("testuser");
+            contextReceived["firstName"].Should().Be("Test");
+            contextReceived["lastName"].Should().Be("User");
+            contextReceived["callbackQuery"].Should().BeSameAs(callbackQuery);
+        }
+        
+        [Fact]
+        public async Task ScreenManager_HandleCallbackQuery_PassesContextToEventHandler()
+        {
+            // Arrange
+            var screen = new Screen { Title = "Test Screen" };
+            Dictionary<string, object> capturedContext = null;
+            
+            // Set up handler to capture the context
+            screen.OnCallback("test_action", async (data, context) => {
+                capturedContext = context;
+                return true;
+            });
+            
+            _screenManager.RegisterScreen(screen);
+            
+            // Create a test callback query with user info
+            var callbackQuery = new CallbackQuery
+            {
+                Id = "callback-id",
+                Data = "test_action",
+                Message = new Telegram.Bot.Types.Message { 
+                    MessageId = 789,
+                    Chat = new Chat { Id = 123 } 
+                },
+                From = new User { 
+                    Id = 456, 
+                    Username = "testuser", 
+                    FirstName = "Test", 
+                    LastName = "User" 
+                }
+            };
+            
+            // Mock SendTextMessageAsync method with proper return type
+            _botClientMock.Setup(m => m.SendTextMessageAsync(
+                It.IsAny<ChatId>(), 
+                It.IsAny<string>(), 
+                It.IsAny<ParseMode?>(), 
+                It.IsAny<IEnumerable<MessageEntity>>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<bool?>(), 
+                It.IsAny<int?>(), 
+                It.IsAny<IReplyMarkup>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Telegram.Bot.Types.Message())
+            .Callback(() => { });
+            
+            // Navigate to screen first to set current screen
+            await _screenManager.NavigateToScreenAsync(123, screen.Id);
+            
+            // Act
+            await _screenManager.HandleCallbackQueryAsync(callbackQuery);
+            
+            // Assert
+            capturedContext.Should().NotBeNull();
+            capturedContext.Should().ContainKey("chatId");
+            capturedContext.Should().ContainKey("userId");
+            capturedContext.Should().ContainKey("username");
+            capturedContext.Should().ContainKey("firstName");
+            capturedContext.Should().ContainKey("lastName");
+            capturedContext.Should().ContainKey("messageId");
+            capturedContext.Should().ContainKey("callbackQuery");
+            
+            capturedContext["chatId"].Should().Be(123L);
+            capturedContext["userId"].Should().Be(456L);
+            capturedContext["username"].Should().Be("testuser");
+            capturedContext["firstName"].Should().Be("Test");
+            capturedContext["lastName"].Should().Be("User");
+            capturedContext["messageId"].Should().Be(789);
+            capturedContext["callbackQuery"].Should().BeSameAs(callbackQuery);
         }
     }
 } 

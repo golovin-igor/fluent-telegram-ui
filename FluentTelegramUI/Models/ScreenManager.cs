@@ -207,7 +207,19 @@ namespace FluentTelegramUI.Models
             {
                 try
                 {
-                    handled = await handler(callbackQuery.Data);
+                    // Create context dictionary with useful information
+                    var context = new Dictionary<string, object>
+                    {
+                        { "chatId", chatId.Value },
+                        { "userId", callbackQuery.From.Id },
+                        { "username", callbackQuery.From.Username ?? "" },
+                        { "firstName", callbackQuery.From.FirstName ?? "" },
+                        { "lastName", callbackQuery.From.LastName ?? "" },
+                        { "messageId", callbackQuery.Message?.MessageId ?? 0 },
+                        { "callbackQuery", callbackQuery }
+                    };
+                    
+                    handled = await handler(callbackQuery.Data, context);
                 }
                 catch (Exception ex)
                 {

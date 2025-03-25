@@ -73,24 +73,34 @@ namespace FluentTelegramUI.Examples
             }, 2));
             
             // Add counter event handlers
-            counterScreen.OnCallback("counter:increment", async (data) => 
+            counterScreen.OnCallback("counter:increment", async (data, context) => 
             {
+                var chatId = (long)context["chatId"];
+                var username = (string)context["username"];
+                
                 counter++;
-                counterScreen.Content.Text = $"Current counter value: {counter}";
+                counterScreen.Content.Text = $"Current counter value: {counter} (updated by: {username})";
                 return true; // Return true to refresh the screen
             });
             
-            counterScreen.OnCallback("counter:decrement", async (data) => 
+            counterScreen.OnCallback("counter:decrement", async (data, context) => 
             {
+                var chatId = (long)context["chatId"];
+                var username = (string)context["username"];
+                
                 counter--;
-                counterScreen.Content.Text = $"Current counter value: {counter}";
+                counterScreen.Content.Text = $"Current counter value: {counter} (updated by: {username})";
                 return true;
             });
             
-            counterScreen.OnCallback("counter:reset", async (data) => 
+            counterScreen.OnCallback("counter:reset", async (data, context) => 
             {
+                var chatId = (long)context["chatId"];
+                var username = (string)context["username"];
+                var firstName = (string)context["firstName"];
+                
                 counter = 0;
-                counterScreen.Content.Text = $"Current counter value: {counter}";
+                counterScreen.Content.Text = $"Counter reset to 0 by {firstName}";
                 return true;
             });
             
@@ -100,13 +110,15 @@ namespace FluentTelegramUI.Examples
             settingsScreen.AddControl(new TextButton("Toggle Notifications", "settings:toggle_notifications"));
             
             // Add settings event handlers
-            settingsScreen.OnCallback("settings:toggle_dark", async (data) => 
+            settingsScreen.OnCallback("settings:toggle_dark", async (data, context) => 
             {
+                var userId = (long)context["userId"];
                 return true;
             });
             
-            settingsScreen.OnCallback("settings:toggle_notifications", async (data) => 
+            settingsScreen.OnCallback("settings:toggle_notifications", async (data, context) => 
             {
+                var userId = (long)context["userId"];
                 return true;
             });
             

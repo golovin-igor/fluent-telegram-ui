@@ -40,15 +40,15 @@ namespace FluentTelegramUI.Examples
                       .AddButton("🎮 Games", "category_games")
                       .AddButton("🎵 Music", "category_music")
                       .WithButtonsPerRow(2)
-                      .OnCallback("category_books", async (data) => {
+                      .OnCallback("category_books", async (data, context) => {
                           // Handle books category
                           return true;
                       })
-                      .OnCallback("category_games", async (data) => {
+                      .OnCallback("category_games", async (data, context) => {
                           // Handle games category
                           return true;
                       })
-                      .OnCallback("category_music", async (data) => {
+                      .OnCallback("category_music", async (data, context) => {
                           // Handle music category
                           return true;
                       });
@@ -57,7 +57,7 @@ namespace FluentTelegramUI.Examples
                     sb.WithContent("Your profile information:", true)
                       .AddButton("✏️ Edit Profile", "edit_profile")
                       .WithBackButtonText("↩️ Return to Main Menu") // Customize back button text
-                      .OnCallback("edit_profile", async (data) => {
+                      .OnCallback("edit_profile", async (data, context) => {
                           // Handle edit profile
                           return true;
                       });
@@ -68,15 +68,15 @@ namespace FluentTelegramUI.Examples
                       .AddButton("🔔 Notifications", "toggle_notifications")
                       .AddButton("🔒 Privacy", "privacy_settings")
                       .WithButtonsPerRow(2)
-                      .OnCallback("toggle_dark_mode", async (data) => {
+                      .OnCallback("toggle_dark_mode", async (data, context) => {
                           // Toggle dark mode
                           return true;
                       })
-                      .OnCallback("toggle_notifications", async (data) => {
+                      .OnCallback("toggle_notifications", async (data, context) => {
                           // Toggle notifications
                           return true;
                       })
-                      .OnCallback("privacy_settings", async (data) => {
+                      .OnCallback("privacy_settings", async (data, context) => {
                           // Privacy settings
                           return true;
                       });
@@ -91,18 +91,21 @@ namespace FluentTelegramUI.Examples
                 bot.TryGetScreen("Settings", out var settingsScreen))
             {
                 // Set up navigation from main menu to other screens
-                mainScreen?.OnCallback("view_categories", async (data) => {
-                    await bot.NavigateToScreenAsync(0, categoriesScreen.Id);
+                mainScreen?.OnCallback("view_categories", async (data, context) => {
+                    long chatId = (long)context["chatId"];
+                    await bot.NavigateToScreenAsync(chatId, categoriesScreen.Id);
                     return true;
                 });
                 
-                mainScreen?.OnCallback("view_profile", async (data) => {
-                    await bot.NavigateToScreenAsync(0, profileScreen.Id);
+                mainScreen?.OnCallback("view_profile", async (data, context) => {
+                    long chatId = (long)context["chatId"];
+                    await bot.NavigateToScreenAsync(chatId, profileScreen.Id);
                     return true;
                 });
                 
-                mainScreen?.OnCallback("view_settings", async (data) => {
-                    await bot.NavigateToScreenAsync(0, settingsScreen.Id);
+                mainScreen?.OnCallback("view_settings", async (data, context) => {
+                    long chatId = (long)context["chatId"];
+                    await bot.NavigateToScreenAsync(chatId, settingsScreen.Id);
                     return true;
                 });
                 

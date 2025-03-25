@@ -33,7 +33,7 @@ namespace FluentTelegramUI.Models
         /// <summary>
         /// Event handlers for the screen
         /// </summary>
-        public Dictionary<string, Func<string, Task<bool>>> EventHandlers { get; set; } = new();
+        public Dictionary<string, Func<string, Dictionary<string, object>, Task<bool>>> EventHandlers { get; set; } = new();
         
         /// <summary>
         /// The parent screen to navigate back to (if any)
@@ -61,7 +61,7 @@ namespace FluentTelegramUI.Models
         /// <param name="callbackData">The callback data to handle</param>
         /// <param name="handler">The handler function</param>
         /// <returns>The screen instance for method chaining</returns>
-        public Screen OnCallback(string callbackData, Func<string, Task<bool>> handler)
+        public Screen OnCallback(string callbackData, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
             EventHandlers[callbackData] = handler;
             return this;
@@ -73,7 +73,7 @@ namespace FluentTelegramUI.Models
         /// <param name="stateName">The state name when this handler should be active</param>
         /// <param name="handler">The handler function that receives the text input</param>
         /// <returns>The screen instance for method chaining</returns>
-        public Screen OnTextInput(string stateName, Func<string, Task<bool>> handler)
+        public Screen OnTextInput(string stateName, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
             EventHandlers[$"text_input:{stateName}"] = handler;
             return this;

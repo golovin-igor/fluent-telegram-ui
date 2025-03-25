@@ -5,6 +5,7 @@ using FluentTelegramUI.Builders;
 using FluentTelegramUI.Models;
 using Moq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace FluentTelegramUI.Tests
 {
@@ -120,7 +121,7 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var callbackData = "test_callback";
-            Func<string, Task<bool>> handler = _ => Task.FromResult(true);
+            Func<string, Dictionary<string, object>, Task<bool>> handler = (_, _) => Task.FromResult(true);
             
             // Act
             _builder.OnCallback(callbackData, handler);

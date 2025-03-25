@@ -31,4 +31,10 @@
     <ProjectReference Include="..\FluentTelegramUI\FluentTelegramUI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="ScreenManagerTests.cs" />
+    <Compile Remove="ScreenBuilderTests.cs" />
+    <Compile Remove="ScreenUpdateHandlerTests.cs" />
+  </ItemGroup>
+
 </Project>

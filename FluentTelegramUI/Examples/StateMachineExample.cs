@@ -71,10 +71,11 @@ namespace FluentTelegramUI.Examples
                 CallbackData = "start_registration" 
             });
             
-            welcomeScreen.OnCallback("start_registration", async (data) => 
+            welcomeScreen.OnCallback("start_registration", async (data, context) => 
             {
-                // Since this is an example, using a hard-coded chat ID
-                long chatId = 123456789;
+                // Get the chat ID from context
+                long chatId = (long)context["chatId"];
+                var username = (string)context["username"];
                 
                 // Set initial state for the registration process
                 bot.SetCurrentState(chatId, "awaiting_name");
@@ -85,10 +86,10 @@ namespace FluentTelegramUI.Examples
             });
             
             // Set up name screen
-            nameScreen.OnTextInput("awaiting_name", async (name) => 
+            nameScreen.OnTextInput("awaiting_name", async (name, context) => 
             {
-                // Since this is an example, using a hard-coded chat ID
-                long chatId = 123456789;
+                // Get the chat ID from context
+                long chatId = (long)context["chatId"];
                 
                 // Store the name
                 bot.SetState(chatId, "name", name);
@@ -102,10 +103,10 @@ namespace FluentTelegramUI.Examples
             });
             
             // Set up email screen
-            emailScreen.OnTextInput("awaiting_email", async (email) => 
+            emailScreen.OnTextInput("awaiting_email", async (email, context) => 
             {
-                // Since this is an example, using a hard-coded chat ID
-                long chatId = 123456789;
+                // Get the chat ID from context
+                long chatId = (long)context["chatId"];
                 
                 // Simple email validation
                 if (!email.Contains("@"))
@@ -127,10 +128,11 @@ namespace FluentTelegramUI.Examples
             });
             
             // Set up age screen
-            ageScreen.OnTextInput("awaiting_age", async (ageText) => 
+            ageScreen.OnTextInput("awaiting_age", async (ageText, context) => 
             {
-                // Since this is an example, using a hard-coded chat ID
-                long chatId = 123456789;
+                // Get the chat ID from context
+                long chatId = (long)context["chatId"];
+                var firstName = (string)context["firstName"];
                 
                 // Try to parse the age
                 if (!int.TryParse(ageText, out int age) || age < 1 || age > 120)
@@ -151,7 +153,7 @@ namespace FluentTelegramUI.Examples
                 var email = bot.GetState<string>(chatId, "email");
                 
                 summaryScreen.Content.Text = $"*Registration Complete!*\n\n" +
-                    $"Name: {name}\n" +
+                    $"Name: {name} ({firstName})\n" +
                     $"Email: {email}\n" +
                     $"Age: {age}\n\n" +
                     "Thank you for registering!";
@@ -168,10 +170,10 @@ namespace FluentTelegramUI.Examples
             });
             
             // Add a handler for starting over
-            summaryScreen.OnCallback("start_over", async (data) =>
+            summaryScreen.OnCallback("start_over", async (data, context) =>
             {
-                // Since this is an example, using a hard-coded chat ID
-                long chatId = 123456789;
+                // Get the chat ID from context
+                long chatId = (long)context["chatId"];
                 
                 // Clear all state
                 bot.ClearState(chatId);

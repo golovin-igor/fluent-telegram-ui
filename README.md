@@ -109,9 +109,19 @@ bot.RegisterScreen(mainScreen, true); // Set as main screen
 bot.RegisterScreen(settingsScreen);
 
 // Set up navigation
-mainScreen.OnCallback("view_settings", async (data) => 
+mainScreen.OnCallback("view_settings", async (data, context) => 
 {
-    await bot.NavigateToScreenAsync(123456789, settingsScreen.Id);
+    // The context contains useful information:
+    // - chatId: The ID of the current chat
+    // - userId: The ID of the user who pressed the button
+    // - username: The username of the user
+    // - firstName: The first name of the user
+    // - lastName: The last name of the user
+    // - messageId: The ID of the message containing the button
+    // - callbackQuery: The full CallbackQuery object
+    
+    long chatId = (long)context["chatId"];
+    await bot.NavigateToScreenAsync(chatId, settingsScreen.Id);
     return true;
 });
 
@@ -119,7 +129,13 @@ mainScreen.OnCallback("view_settings", async (data) =>
 settingsScreen.WithParent(mainScreen);
 
 // Set up callback for toggle_dark_mode action
-settingsScreen.OnCallback("toggle_dark_mode", async (data) => {
+settingsScreen.OnCallback("toggle_dark_mode", async (data, context) => {
+    // Access user information from context
+    long userId = (long)context["userId"];
+    string username = (string)context["username"];
+    
+    Console.WriteLine($"Dark mode toggled by {username} (ID: {userId})");
+    
     // Handle dark mode toggle
     return true; // Refresh screen
 });
@@ -189,9 +205,10 @@ bot.RegisterScreen(nameScreen);
 bot.RegisterScreen(emailScreen);
 
 // Set up handlers
-welcomeScreen.OnCallback("start_registration", async (data) => 
+welcomeScreen.OnCallback("start_registration", async (data, context) => 
 {
-    long chatId = 123456789; // In real app, you'd get this from context
+    // Get chatId from context
+    long chatId = (long)context["chatId"];
     
     // Set initial state for the registration process
     bot.StateMachine.SetState(chatId, "awaiting_name");
@@ -202,9 +219,10 @@ welcomeScreen.OnCallback("start_registration", async (data) =>
 });
 
 // Set up name input handler
-nameScreen.OnTextInput("awaiting_name", async (name) => 
+nameScreen.OnTextInput("awaiting_name", async (name, context) => 
 {
-    long chatId = 123456789; // In real app, you'd get this from context
+    // Get chatId from context
+    long chatId = (long)context["chatId"];
     
     // Store the name
     bot.StateMachine.SetState(chatId, "name", name);
@@ -218,9 +236,18 @@ nameScreen.OnTextInput("awaiting_name", async (name) =>
 });
 
 // Set up email input handler
-emailScreen.OnTextInput("awaiting_email", async (email) => 
+emailScreen.OnTextInput("awaiting_email", async (email, context) => 
 {
-    long chatId = 123456789; // In real app, you'd get this from context
+    // Get chatId and user info from context
+    long chatId = (long)context["chatId"];
+    string firstName = (string)context["firstName"];
+    
+    // Validate email
+    if (!email.Contains("@"))
+    {
+        // Invalid email, don't proceed
+        return true; // Refresh screen with error
+    }
     
     // Store the email
     bot.StateMachine.SetState(chatId, "email", email);
@@ -244,6 +271,59 @@ The project is organized into several key namespaces:
 - `FluentTelegramUI` - Core functionality and entry points
 - `FluentTelegramUI.Models` - Data models including Screen and StateMachine
 - `FluentTelegramUI.Handlers` - Update handlers and bot event processing
+
+## Context Parameters
+
+FluentTelegramUI passes context parameters to callback handlers, giving you easy access to important information like the user's details and chat ID. This eliminates the need for hard-coded IDs and makes your code more dynamic.
+
+### Available Context Parameters
+
+The following parameters are available in the context dictionary:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `chatId` | `long` | ID of the chat where the interaction occurred |
+| `userId` | `long` | ID of the user who triggered the callback |
+| `username` | `string` | Username of the user (may be empty) |
+| `firstName` | `string` | First name of the user |
+| `lastName` | `string` | Last name of the user (may be empty) |
+| `messageId` | `int` | ID of the message that contains the callback button |
+| `callbackQuery` | `CallbackQuery` | The full Telegram CallbackQuery object |
+
+For text input handlers, the context also includes:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `Message` | The full Telegram Message object |
+
+### Example Usage
+
+```csharp
+// Handler with context parameters
+screen.OnCallback("show_profile", async (data, context) => 
+{
+    // Extract user information from context
+    long chatId = (long)context["chatId"];
+    long userId = (long)context["userId"];
+    string username = (string)context["username"];
+    string firstName = (string)context["firstName"];
+    
+    // Use the extracted information
+    Console.WriteLine($"User {firstName} (@{username}) requested their profile");
+    
+    // Store user preference in a dictionary using their user ID
+    userPreferences[userId] = new Dictionary<string, bool>
+    {
+        { "notifications", true },
+        { "darkMode", false }
+    };
+    
+    // Navigate to profile screen using the chat ID from context
+    await bot.NavigateToScreenAsync(chatId, profileScreen.Id);
+    return true;
+});
+```
+
+This feature makes it much easier to build bots that maintain per-user state, provide personalized experiences, and work correctly in group chats.
 
 ## Dependencies
 
@@ -275,7 +355,7 @@ Contributions are welcome! If you find bugs or have feature requests, please ope
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Acknowledgments
 

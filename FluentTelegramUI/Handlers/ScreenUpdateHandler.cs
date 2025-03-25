@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using FluentTelegramUI.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using System.Collections.Generic;
 
 namespace FluentTelegramUI.Handlers
 {
@@ -55,11 +56,23 @@ namespace FluentTelegramUI.Handlers
                 var handlerKey = $"text_input:{currentState}";
                 if (screen.EventHandlers.TryGetValue(handlerKey, out var handler))
                 {
+                    // Create context dictionary with useful information
+                    var context = new Dictionary<string, object>
+                    {
+                        { "chatId", message.Chat.Id },
+                        { "userId", message.From?.Id ?? 0 },
+                        { "username", message.From?.Username ?? "" },
+                        { "firstName", message.From?.FirstName ?? "" },
+                        { "lastName", message.From?.LastName ?? "" },
+                        { "messageId", message.MessageId },
+                        { "message", message }
+                    };
+                    
                     // Store the input text in state
                     _screenManager.SetState(message.Chat.Id, "last_input", message.Text);
                     
-                    // Call the handler
-                    bool result = await handler(message.Text);
+                    // Call the handler with the text and context
+                    bool result = await handler(message.Text, context);
                     if (result)
                     {
                         // Refresh the screen if the handler returns true

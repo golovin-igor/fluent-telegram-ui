@@ -33,7 +33,7 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var screen = new Screen();
-            Func<string, Task<bool>> handler = _ => Task.FromResult(true);
+            Func<string, Dictionary<string, object>, Task<bool>> handler = (_, _) => Task.FromResult(true);
             
             // Act
             screen.OnCallback("test_callback", handler);
@@ -41,6 +41,77 @@ namespace FluentTelegramUI.Tests
             // Assert
             screen.EventHandlers.Should().ContainKey("test_callback");
             screen.EventHandlers["test_callback"].Should().BeSameAs(handler);
+        }
+        
+        [Fact]
+        public async Task Screen_OnCallback_HandlerReceivesContext()
+        {
+            // Arrange
+            var screen = new Screen();
+            var contextPassedToHandler = new Dictionary<string, object>();
+            
+            // Set up callback that captures the context
+            screen.OnCallback("test_context", async (data, context) => {
+                contextPassedToHandler = context;
+                return true;
+            });
+            
+            // Create a test context
+            var testContext = new Dictionary<string, object>
+            {
+                { "chatId", 123456789L },
+                { "userId", 987654321L },
+                { "username", "testuser" },
+                { "firstName", "Test" },
+                { "lastName", "User" }
+            };
+            
+            // Act
+            var result = await screen.EventHandlers["test_context"].Invoke("test_context", testContext);
+            
+            // Assert
+            result.Should().BeTrue();
+            contextPassedToHandler.Should().NotBeNull().And.HaveCount(testContext.Count);
+            contextPassedToHandler["chatId"].Should().Be(123456789L);
+            contextPassedToHandler["userId"].Should().Be(987654321L);
+            contextPassedToHandler["username"].Should().Be("testuser");
+            contextPassedToHandler["firstName"].Should().Be("Test");
+            contextPassedToHandler["lastName"].Should().Be("User");
+        }
+        
+        [Fact]
+        public void Screen_OnTextInput_HandlerReceivesContext()
+        {
+            // Arrange
+            var screen = new Screen();
+            Dictionary<string, object> capturedContext = null;
+            
+            // Set up text input handler
+            screen.OnTextInput("test_state", (text, context) => {
+                capturedContext = context;
+                return Task.FromResult(true);
+            });
+            
+            // Create a test context
+            var testContext = new Dictionary<string, object>
+            {
+                { "chatId", 123456789L },
+                { "userId", 987654321L },
+                { "messageId", 55555 },
+                { "message", new Telegram.Bot.Types.Message() }
+            };
+            
+            // Act
+            var handler = screen.EventHandlers["text_input:test_state"];
+            var handlerTask = handler.Invoke("test input", testContext);
+            
+            // Assert
+            screen.EventHandlers.Should().ContainKey("text_input:test_state");
+            capturedContext.Should().BeSameAs(testContext);
+            capturedContext["chatId"].Should().Be(123456789L);
+            capturedContext["userId"].Should().Be(987654321L);
+            capturedContext["messageId"].Should().Be(55555);
+            capturedContext["message"].Should().BeOfType<Telegram.Bot.Types.Message>();
         }
         
         [Fact]
@@ -166,7 +237,7 @@ namespace FluentTelegramUI.Tests
             var screen = new Screen();
             var parentScreen = new Screen();
             var message = new Message();
-            Func<string, Task<bool>> handler = _ => Task.FromResult(true);
+            Func<string, Dictionary<string, object>, Task<bool>> handler = (_, _) => Task.FromResult(true);
             
             // Act
             var result = screen
