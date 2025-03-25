@@ -70,6 +70,43 @@ var card = new CardBuilder()
     .Build();
 ```
 
+## TODO
+
+### High Priority
+- [ ] Implement core Fluent UI components (Buttons, Cards, Menus)
+- [ ] Create basic Telegram bot integration
+- [ ] Set up CI/CD pipeline
+- [ ] Add unit tests for core components
+- [ ] Create NuGet package
+
+### UI Components
+- [ ] Add support for custom themes
+- [ ] Implement responsive grid layouts
+- [ ] Create reusable animation components
+- [ ] Add support for custom fonts and styles
+- [ ] Implement accessibility features
+
+### Bot Features
+- [ ] Add support for inline keyboards
+- [ ] Implement conversation flow management
+- [ ] Create state management system
+- [ ] Add support for media messages
+- [ ] Implement error handling and retry mechanisms
+
+### Documentation
+- [ ] Create detailed API documentation
+- [ ] Add more code examples
+- [ ] Create a getting started guide
+- [ ] Add troubleshooting section
+- [ ] Create contribution guidelines
+
+### Performance & Security
+- [ ] Implement caching system
+- [ ] Add rate limiting support
+- [ ] Implement secure token storage
+- [ ] Add request validation
+- [ ] Optimize message handling
+
 ## Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
