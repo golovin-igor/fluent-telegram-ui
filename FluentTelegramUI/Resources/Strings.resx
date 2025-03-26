@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="WelcomeMessage" xml:space="preserve">
+    <value>Welcome to Fluent Telegram UI!</value>
+  </data>
+  <data name="StartCommand" xml:space="preserve">
+    <value>Start the bot</value>
+  </data>
+  <data name="HelpCommand" xml:space="preserve">
+    <value>Show help information</value>
+  </data>
+  <data name="SettingsCommand" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="LanguageCommand" xml:space="preserve">
+    <value>Change language</value>
+  </data>
+  <data name="LanguageChanged" xml:space="preserve">
+    <value>Language has been changed to {0}</value>
+  </data>
+  <data name="InvalidCommand" xml:space="preserve">
+    <value>Invalid command. Please try again.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>An error occurred: {0}</value>
+  </data>
+  <data name="AvailableCommands" xml:space="preserve">
+    <value>Available commands:</value>
+  </data>
+  <data name="LanguageButton" xml:space="preserve">
+    <value>Language Settings</value>
+  </data>
+  <data name="ThemeButton" xml:space="preserve">
+    <value>Theme Settings</value>
+  </data>
+  <data name="SettingsMessage" xml:space="preserve">
+    <value>Please select a setting to configure:</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Please select your preferred language:</value>
+  </data>
+</root> 

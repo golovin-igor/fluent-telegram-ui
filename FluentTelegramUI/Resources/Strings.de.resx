@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="WelcomeMessage" xml:space="preserve">
+    <value>Willkommen bei Fluent Telegram UI!</value>
+  </data>
+  <data name="StartCommand" xml:space="preserve">
+    <value>Bot starten</value>
+  </data>
+  <data name="HelpCommand" xml:space="preserve">
+    <value>Hilfe anzeigen</value>
+  </data>
+  <data name="SettingsCommand" xml:space="preserve">
+    <value>Einstellungen öffnen</value>
+  </data>
+  <data name="LanguageCommand" xml:space="preserve">
+    <value>Sprache ändern</value>
+  </data>
+  <data name="LanguageChanged" xml:space="preserve">
+    <value>Die Sprache wurde auf {0} geändert</value>
+  </data>
+  <data name="InvalidCommand" xml:space="preserve">
+    <value>Ungültiger Befehl. Bitte versuchen Sie es erneut.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Ein Fehler ist aufgetreten: {0}</value>
+  </data>
+  <data name="AvailableCommands" xml:space="preserve">
+    <value>Verfügbare Befehle:</value>
+  </data>
+  <data name="LanguageButton" xml:space="preserve">
+    <value>Spracheinstellungen</value>
+  </data>
+  <data name="ThemeButton" xml:space="preserve">
+    <value>Theme-Einstellungen</value>
+  </data>
+  <data name="SettingsMessage" xml:space="preserve">
+    <value>Bitte wählen Sie eine Einstellung zum Konfigurieren:</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Bitte wählen Sie Ihre bevorzugte Sprache:</value>
+  </data>
+</root> 
