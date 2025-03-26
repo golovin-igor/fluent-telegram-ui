@@ -28,6 +28,26 @@ namespace FluentTelegramUI.Models
         /// <summary>
         /// Modern style with clean design
         /// </summary>
-        Modern = 4
+        Modern = 4,
+        
+        /// <summary>
+        /// Minimalist style with simplified design
+        /// </summary>
+        Minimalist = 5,
+        
+        /// <summary>
+        /// Professional style for business applications
+        /// </summary>
+        Professional = 6,
+        
+        /// <summary>
+        /// Fun style with playful elements
+        /// </summary>
+        Fun = 7,
+        
+        /// <summary>
+        /// Technical style for developer tools
+        /// </summary>
+        Technical = 8
     }
 } 

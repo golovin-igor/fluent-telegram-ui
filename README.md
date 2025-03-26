@@ -13,6 +13,8 @@ A modern, fluent-style UI framework for creating Telegram bots using C# .NET. Th
 - 🔄 Screen-based navigation with back functionality
 - 🎛️ Interactive UI controls with callback handling
 - 🧠 Integrated state machine for managing conversation flows
+- 🖼️ Rich set of advanced UI components (toggles, image carousels, progress indicators, etc.)
+- 🌈 Multiple style options for a customized look and feel
 
 ## Getting Started
 
@@ -141,6 +143,126 @@ settingsScreen.OnCallback("toggle_dark_mode", async (data, context) => {
 });
 ```
 
+## Advanced UI Components
+
+FluentTelegramUI includes a rich set of advanced UI components that allow you to create sophisticated and interactive interfaces:
+
+### Toggle Switch
+
+Create on/off toggles for settings or feature flags:
+
+```csharp
+// Add a toggle to a screen
+screenBuilder
+    .AddToggle("Dark Mode", "dark_mode", false)
+    .WithToggleHandler("dark_mode")
+    .AddToggle("Notifications", "notifications", true)
+    .WithToggleHandler("notifications");
+
+// Handle toggle state changes
+screen.OnCallback("dark_mode:on", async (data, context) => {
+    // Dark mode was turned on
+    return true;
+});
+
+screen.OnCallback("dark_mode:off", async (data, context) => {
+    // Dark mode was turned off
+    return true;
+});
+```
+
+### Image Carousel
+
+Display multiple images with navigation controls:
+
+```csharp
+// Add an image carousel to a screen
+var imageUrls = new List<string>
+{
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg",
+    "https://example.com/image3.jpg"
+};
+
+var captions = new List<string>
+{
+    "Image 1 Caption",
+    "Image 2 Caption",
+    "Image 3 Caption"
+};
+
+screenBuilder
+    .AddImageCarousel(imageUrls, captions)
+    .WithCarouselHandler("gallery");
+```
+
+### Progress Indicator
+
+Show completion status with customizable progress bars:
+
+```csharp
+// Add progress indicators to a screen
+screenBuilder
+    .AddProgressIndicator("Download", 25)
+    .AddProgressIndicator("Upload", 50)
+    .AddProgressIndicator("Processing", 75);
+
+// Customize the appearance
+var customProgress = new ProgressIndicator("Custom", 40)
+{
+    FilledChar = "■",
+    EmptyChar = "□",
+    Width = 20,
+    ShowPercentage = false
+};
+screen.AddControl(customProgress);
+```
+
+### Accordion/Collapsible Section
+
+Create expandable/collapsible content sections:
+
+```csharp
+// Add accordions to a screen
+screenBuilder
+    .AddAccordion("FAQ", "1. How do I use this?\n2. What is this app?", false)
+    .WithAccordionHandler("faq")
+    .AddAccordion("Terms of Service", "Long terms of service text here...", false)
+    .WithAccordionHandler("tos");
+```
+
+### Rich Text
+
+Format text with various styles and alignments:
+
+```csharp
+// Add formatted text to a screen
+screenBuilder
+    .AddRichText("This is bold text", isBold: true)
+    .AddRichText("This is italic text", isItalic: true)
+    .AddRichText("This is centered text", alignment: TextAlignment.Center)
+    .AddRichText("This is right-aligned", alignment: TextAlignment.Right)
+    .AddRichText("This has multiple styles", isBold: true, isItalic: true, isUnderlined: true);
+```
+
+### Rating
+
+Add star ratings for feedback collection:
+
+```csharp
+// Add rating controls to a screen
+screenBuilder
+    .AddRating("Rate our service", "rate_service", 0)
+    .AddRating("Rate our app", "rate_app", 4);
+
+// Handle rating submissions
+screen.OnCallback("rate_service:*", async (data, context) => {
+    var rating = int.Parse(data.Split(':')[1]);
+    Console.WriteLine($"Service rated: {rating} stars");
+    return true;
+});
+```
+
 ## State Machine
 
 FluentTelegramUI includes a powerful state machine for managing conversation flows:
@@ -252,16 +374,58 @@ emailScreen.OnTextInput("awaiting_email", async (email, context) =>
     // Store the email
     bot.StateMachine.SetState(chatId, "email", email);
     
-    // Complete the process
-    bot.StateMachine.SetState(chatId, "complete");
+    // Complete registration
+    string name = bot.StateMachine.GetState<string>(chatId, "name");
     
-    // Display completion message
+    await bot.SendMessageAsync(chatId, new Message
+    {
+        Text = $"Thank you, {name}! Your registration is complete.",
+        ParseMarkdown = true
+    });
+    
+    // Clear state and navigate back to main screen
+    bot.StateMachine.ClearState(chatId);
+    await bot.NavigateToMainScreenAsync(chatId);
     return true;
 });
+```
 
-// Set up update handler for the bot to handle text inputs
-var handler = new ScreenUpdateHandler(loggerFactory.CreateLogger<ScreenUpdateHandler>(), bot.ScreenManager);
-bot.SetUpdateHandler(handler);
+## Styling Options
+
+FluentTelegramUI provides several styling options to customize the appearance of your bot:
+
+```csharp
+// Create a bot with the Modern style
+var bot = new TelegramBotBuilder()
+    .WithToken("YOUR_BOT_TOKEN")
+    .WithFluentUI(FluentStyle.Modern)
+    .Build();
+
+// Available styles:
+// - FluentStyle.Default: Default style with minimal formatting
+// - FluentStyle.Light: Light style with subtle colors
+// - FluentStyle.Dark: Dark style with high contrast
+// - FluentStyle.Colorful: Colorful style with vibrant colors
+// - FluentStyle.Modern: Modern style with clean design
+// - FluentStyle.Minimalist: Minimalist style with simplified design
+// - FluentStyle.Professional: Professional style for business applications
+// - FluentStyle.Fun: Fun style with playful elements
+// - FluentStyle.Technical: Technical style for developer tools
+
+// Set a style for a specific control
+var button = new Button
+{
+    Text = "Click Me",
+    CallbackData = "click_action",
+    Style = FluentStyle.Colorful
+};
+
+// Or set a style for a message
+var message = new Message
+{
+    Text = "Styled message",
+    Style = FluentStyle.Dark
+};
 ```
 
 ## Localization Support

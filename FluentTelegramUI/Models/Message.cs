@@ -34,6 +34,21 @@ namespace FluentTelegramUI.Models
         public int ButtonsPerRow { get; set; } = 1;
         
         /// <summary>
+        /// The URL of an image to include with the message
+        /// </summary>
+        public string ImageUrl { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// The caption for the image, if different from the message text
+        /// </summary>
+        public string ImageCaption { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Whether this message contains an image
+        /// </summary>
+        public bool HasImage => !string.IsNullOrEmpty(ImageUrl);
+        
+        /// <summary>
         /// Converts the message buttons to an InlineKeyboardMarkup for Telegram API
         /// </summary>
         /// <returns>An InlineKeyboardMarkup</returns>
@@ -61,6 +76,15 @@ namespace FluentTelegramUI.Models
             }
             
             return new InlineKeyboardMarkup(rows);
+        }
+        
+        /// <summary>
+        /// Gets the effective caption for an image message
+        /// </summary>
+        /// <returns>The caption text</returns>
+        public string GetEffectiveImageCaption()
+        {
+            return !string.IsNullOrEmpty(ImageCaption) ? ImageCaption : Text;
         }
     }
 } 
