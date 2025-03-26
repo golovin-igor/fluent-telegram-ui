@@ -13,6 +13,9 @@ namespace FluentTelegramUI.Examples
     /// </summary>
     public class AdvancedUIComponentsExample
     {
+        // Store a static reference to allow callbacks to access it
+        private static FluentTelegramBot _bot;
+        
         /// <summary>
         /// Run the example
         /// </summary>
@@ -21,7 +24,7 @@ namespace FluentTelegramUI.Examples
         public static async Task Run(string token)
         {
             // Create bot with fluent interface
-            var bot = new TelegramBotBuilder()
+            _bot = new TelegramBotBuilder()
                 .WithToken(token)
                 .WithFluentUI(FluentStyle.Modern)
                 .AddScreen("Advanced UI Components", ConfigureAdvancedComponentsScreen, isMainScreen: true)
@@ -39,7 +42,7 @@ namespace FluentTelegramUI.Examples
             Console.ReadLine();
             
             // Stop receiving updates
-            bot.StopReceiving();
+            _bot.StopReceiving();
             
             // Return completed task
             await Task.CompletedTask;
@@ -173,6 +176,8 @@ namespace FluentTelegramUI.Examples
         /// <param name="screen">The screen builder</param>
         private static void ConfigureRatingScreen(ScreenBuilder screen)
         {
+            var screenId = $"rating-example-{Guid.NewGuid()}"; // Create a unique ID
+            
             screen.WithContent("Rating Example")
                 .AddRichText("Ratings let users provide feedback", isBold: true)
                 .AddRating("Rate our service", "service-rating", 0)
@@ -181,11 +186,28 @@ namespace FluentTelegramUI.Examples
                     var rating = int.Parse(data.Split(':')[1]);
                     
                     // In a real app, you would store the rating here
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    Console.WriteLine($"Service rated: {rating} stars");
+                    
+                    // Get the chat ID from the context
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId &&
+                        state.TryGetValue("messageId", out var messageIdObj) && messageIdObj is int messageId)
                     {
-                        // We would need the screen manager to update the screen properly
-                        // This is a simplified example for demonstration purposes
-                        return true;
+                        // Find the rating control and update it
+                        var controls = screen.Build().Controls;
+                        foreach (var control in controls)
+                        {
+                            if (control is Rating ratingControl && ratingControl.CallbackDataPrefix == "service-rating")
+                            {
+                                ratingControl.Value = rating;
+                                
+                                // Use the static bot reference for navigation
+                                if (_bot != null && _bot.TryGetScreen("rating-example", out var ratingScreen))
+                                {
+                                    await _bot.NavigateToScreenAsync(chatId, "rating-example");
+                                }
+                                break;
+                            }
+                        }
                     }
                     
                     return true;

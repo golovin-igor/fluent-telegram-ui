@@ -316,7 +316,10 @@ namespace FluentTelegramUI.Builders
                 if (carouselControl != null && carouselControl.CurrentIndex > 0)
                 {
                     carouselControl.CurrentIndex--;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });
@@ -327,7 +330,10 @@ namespace FluentTelegramUI.Builders
                 if (carouselControl != null && carouselControl.CurrentIndex < carouselControl.ImageUrls.Count - 1)
                 {
                     carouselControl.CurrentIndex++;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });
@@ -348,7 +354,10 @@ namespace FluentTelegramUI.Builders
                 if (toggleControl != null)
                 {
                     toggleControl.IsOn = true;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });
@@ -359,7 +368,10 @@ namespace FluentTelegramUI.Builders
                 if (toggleControl != null)
                 {
                     toggleControl.IsOn = false;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });
@@ -380,7 +392,10 @@ namespace FluentTelegramUI.Builders
                 if (accordionControl != null)
                 {
                     accordionControl.IsExpanded = true;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });
@@ -391,7 +406,10 @@ namespace FluentTelegramUI.Builders
                 if (accordionControl != null)
                 {
                     accordionControl.IsExpanded = false;
-                    await _bot.UpdateScreen(_screen.Id);
+                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    {
+                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                    }
                 }
                 return true;
             });

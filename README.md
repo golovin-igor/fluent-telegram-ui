@@ -428,128 +428,57 @@ var message = new Message
 };
 ```
 
-## Localization Support
+## Example Advanced UI Components Screen
 
-FluentTelegramUI provides built-in support for multiple languages through a flexible localization system:
-
-```csharp
-// Get the localization service instance
-var localization = LocalizationService.Instance;
-
-// Get a localized string
-string welcomeMessage = localization.GetString("WelcomeMessage");
-
-// Get a localized string with parameters
-string errorMessage = localization.GetString("ErrorOccurred", "Connection failed");
-
-// Change the language at runtime
-localization.SetCulture("de"); // For German
-localization.SetCulture("en"); // For English
-localization.SetCulture("ru"); // For Russian
-```
-
-### Resource Files
-
-Localization strings are stored in resource files (.resx) in the Resources directory:
-
-- `Strings.resx` - Default English strings
-- `Strings.de.resx` - German translations
-- `Strings.ru.resx` - Russian translations
-- `Strings.fr.resx` - French translations (optional)
-- `Strings.es.resx` - Spanish translations (optional)
-- etc.
-
-### Example Localized Command Handler
+Here's a complete example showing how to create a screen with all the advanced UI components:
 
 ```csharp
-public class LocalizedCommandHandler : ICommandHandler
-{
-    private readonly LocalizationService _localization;
-    private readonly ITelegramBotClient _botClient;
+// Create a screen with advanced UI components
+var advancedUiScreen = new ScreenBuilder(bot, "Advanced UI Components")
+    .WithContent("This screen demonstrates the advanced UI components available in FluentTelegramUI:")
+    
+    // Add a toggle control
+    .AddToggle("Dark Mode", "dark_mode", false)
+    .WithToggleHandler("dark_mode")
+    
+    // Add a progress indicator
+    .AddProgressIndicator("Download Progress", 65)
+    
+    // Add an accordion
+    .AddAccordion("Frequently Asked Questions", 
+        "1. What is FluentTelegramUI?\nA modern UI framework for Telegram bots.\n\n" +
+        "2. How do I install it?\nUse NuGet: dotnet add package FluentTelegramUI", 
+        false)
+    .WithAccordionHandler("faq")
+    
+    // Add rich text with formatting
+    .AddRichText("Important Information", isBold: true, alignment: TextAlignment.Center)
+    
+    // Add a rating control
+    .AddRating("Rate this library", "rate_library", 0)
+    
+    // Add an image carousel
+    .AddImageCarousel(
+        new List<string> {
+            "https://example.com/image1.jpg",
+            "https://example.com/image2.jpg",
+            "https://example.com/image3.jpg"
+        },
+        new List<string> {
+            "UI Component Library",
+            "Beautiful Controls",
+            "Easy to Implement"
+        })
+    .WithCarouselHandler("gallery")
+    
+    // Add a back button to return to the main menu
+    .AddNavigationButton("Back to Main Menu", "main_menu")
+    
+    .Build();
 
-    public LocalizedCommandHandler(ITelegramBotClient botClient)
-    {
-        _localization = LocalizationService.Instance;
-        _botClient = botClient;
-    }
-
-    public async Task HandleCommandAsync(Message message)
-    {
-        switch (message.Text.ToLower())
-        {
-            case "/start":
-                await HandleStartCommand(message);
-                break;
-            case "/help":
-                await HandleHelpCommand(message);
-                break;
-            case "/settings":
-                await HandleSettingsCommand(message);
-                break;
-            case "/language":
-                await HandleLanguageCommand(message);
-                break;
-            default:
-                await HandleInvalidCommand(message);
-                break;
-        }
-    }
-
-    private async Task HandleStartCommand(Message message)
-    {
-        string welcomeMessage = _localization.GetString("WelcomeMessage");
-        await _botClient.SendTextMessageAsync(
-            chatId: message.Chat.Id,
-            text: welcomeMessage
-        );
-    }
-
-    private async Task HandleLanguageCommand(Message message)
-    {
-        var languageKeyboard = new InlineKeyboardMarkup(new[]
-        {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("English", "lang_en"),
-                InlineKeyboardButton.WithCallbackData("Deutsch", "lang_de")
-            }
-        });
-
-        await _botClient.SendTextMessageAsync(
-            chatId: message.Chat.Id,
-            text: _localization.GetString("SelectLanguage"),
-            replyMarkup: languageKeyboard
-        );
-    }
-}
+// Register the screen
+bot.RegisterScreen(advancedUiScreen);
 ```
-
-### Adding New Languages
-
-To add support for a new language:
-
-1. Create a new resource file named `Strings.{culture-code}.resx` in the Resources directory
-2. Copy all string keys from `Strings.resx`
-3. Translate the values to the target language
-4. The culture code should follow the format: `{language}-{country}` (e.g., `fr-FR` for French)
-
-### Available Localized Strings
-
-The following strings are available by default:
-
-- `WelcomeMessage` - Welcome message
-- `StartCommand` - Start command description
-- `HelpCommand` - Help command description
-- `SettingsCommand` - Settings command description
-- `LanguageCommand` - Language command description
-- `LanguageChanged` - Language change confirmation
-- `InvalidCommand` - Invalid command message
-- `ErrorOccurred` - Error message template
-- `AvailableCommands` - Available commands header
-- `LanguageButton` - Language settings button
-- `ThemeButton` - Theme settings button
-- `SettingsMessage` - Settings menu message
-- `SelectLanguage` - Language selection prompt
 
 ## Project Structure
 
@@ -558,6 +487,7 @@ The project is organized into several key namespaces:
 - `FluentTelegramUI` - Core functionality and entry points
 - `FluentTelegramUI.Models` - Data models including Screen and StateMachine
 - `FluentTelegramUI.Handlers` - Update handlers and bot event processing
+- `FluentTelegramUI.Builders` - Builder classes for creating UI components
 
 ## Context Parameters
 
@@ -582,36 +512,6 @@ For text input handlers, the context also includes:
 |-----------|------|-------------|
 | `message` | `Message` | The full Telegram Message object |
 
-### Example Usage
-
-```csharp
-// Handler with context parameters
-screen.OnCallback("show_profile", async (data, context) => 
-{
-    // Extract user information from context
-    long chatId = (long)context["chatId"];
-    long userId = (long)context["userId"];
-    string username = (string)context["username"];
-    string firstName = (string)context["firstName"];
-    
-    // Use the extracted information
-    Console.WriteLine($"User {firstName} (@{username}) requested their profile");
-    
-    // Store user preference in a dictionary using their user ID
-    userPreferences[userId] = new Dictionary<string, bool>
-    {
-        { "notifications", true },
-        { "darkMode", false }
-    };
-    
-    // Navigate to profile screen using the chat ID from context
-    await bot.NavigateToScreenAsync(chatId, profileScreen.Id);
-    return true;
-});
-```
-
-This feature makes it much easier to build bots that maintain per-user state, provide personalized experiences, and work correctly in group chats.
-
 ## Dependencies
 
 - Microsoft.Extensions.DependencyInjection (7.0.0)
@@ -622,19 +522,6 @@ This feature makes it much easier to build bots that maintain per-user state, pr
 ## Status
 
 This project is currently in development. While core functionality is working, there are still features to be implemented and improvements to be made.
-
-### Completed
-- [x] Core Telegram Bot integration
-- [x] Screen-based UI components
-- [x] Navigation system with back functionality
-- [x] State machine for conversation management
-- [x] Update handlers for processing bot events
-
-### In Progress
-- [ ] Complete documentation
-- [ ] Publish NuGet package
-- [ ] Add more UI controls and components
-- [ ] Implement more examples
 
 ## Contributing
 

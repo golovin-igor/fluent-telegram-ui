@@ -259,7 +259,11 @@ namespace FluentTelegramUI.Models
             else
             {
                 // No captions provided, initialize with empty strings
-                Captions = new List<string>(new string[ImageUrls.Count]);
+                Captions = new List<string>();
+                for (int i = 0; i < ImageUrls.Count; i++)
+                {
+                    Captions.Add(string.Empty);
+                }
             }
         }
         
@@ -466,6 +470,7 @@ namespace FluentTelegramUI.Models
         {
             string formattedText = Text;
             
+            // Apply formatting in a consistent order (bold first, then italic, then underline)
             if (IsBold)
             {
                 formattedText = $"*{formattedText}*";
