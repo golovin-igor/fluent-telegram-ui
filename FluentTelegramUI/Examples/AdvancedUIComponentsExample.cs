@@ -14,7 +14,7 @@ namespace FluentTelegramUI.Examples
     public class AdvancedUIComponentsExample
     {
         // Store a static reference to allow callbacks to access it
-        private static FluentTelegramBot _bot;
+        private static FluentTelegramBot? _bot;
         
         /// <summary>
         /// Run the example

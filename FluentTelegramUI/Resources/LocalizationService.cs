@@ -5,21 +5,23 @@ using System.Threading;
 
 namespace FluentTelegramUI.Resources
 {
+    /// <summary>
+    /// Service for managing localization resources
+    /// </summary>
     public class LocalizationService
     {
-        private static LocalizationService _instance;
+        private static LocalizationService? _instance;
         private ResourceManager _resourceManager;
         private CultureInfo _currentCulture;
 
+        /// <summary>
+        /// Gets the singleton instance of the localization service
+        /// </summary>
         public static LocalizationService Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new LocalizationService();
-                }
-                return _instance;
+                return _instance ??= new LocalizationService();
             }
         }
 
@@ -59,7 +61,7 @@ namespace FluentTelegramUI.Resources
         {
             try
             {
-                string value = _resourceManager.GetString(key, _currentCulture);
+                string? value = _resourceManager.GetString(key, _currentCulture);
                 return value != null ? string.Format(value, args) : key;
             }
             catch
