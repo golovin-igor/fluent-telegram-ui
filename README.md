@@ -480,6 +480,19 @@ var advancedUiScreen = new ScreenBuilder(bot, "Advanced UI Components")
 bot.RegisterScreen(advancedUiScreen);
 ```
 
+## Migrating from Telegram.Bot
+
+If you're already using the Telegram.Bot library and want to migrate to FluentTelegramUI, we provide a comprehensive migration guide to help you transition smoothly. The guide covers:
+
+- Basic migration steps
+- Converting message handlers to screens
+- Migrating command handlers
+- Handling inline keyboards
+- Managing user state
+- And more
+
+Check out the [Migration Guide](docs/advanced/migrating.md) for detailed instructions and code examples.
+
 ## Project Structure
 
 The project is organized into several key namespaces:

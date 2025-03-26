@@ -117,6 +117,7 @@ This is an open-source project, and we welcome contributions! Check out our [Con
 - [Custom Controls](advanced/custom-controls.md)
 - [Handling Callbacks](advanced/handling-callbacks.md)
 - [Error Handling](advanced/error-handling.md)
+- [Migrating from Telegram.Bot](advanced/migrating.md)
 
 ## Examples
 
