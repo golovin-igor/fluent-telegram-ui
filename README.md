@@ -264,6 +264,127 @@ var handler = new ScreenUpdateHandler(loggerFactory.CreateLogger<ScreenUpdateHan
 bot.SetUpdateHandler(handler);
 ```
 
+## Localization Support
+
+FluentTelegramUI provides built-in support for multiple languages through a flexible localization system:
+
+```csharp
+// Get the localization service instance
+var localization = LocalizationService.Instance;
+
+// Get a localized string
+string welcomeMessage = localization.GetString("WelcomeMessage");
+
+// Get a localized string with parameters
+string errorMessage = localization.GetString("ErrorOccurred", "Connection failed");
+
+// Change the language at runtime
+localization.SetCulture("de"); // For German
+localization.SetCulture("en"); // For English
+```
+
+### Resource Files
+
+Localization strings are stored in resource files (.resx) in the Resources directory:
+
+- `Strings.resx` - Default English strings
+- `Strings.de.resx` - German translations
+- `Strings.fr.resx` - French translations (optional)
+- `Strings.es.resx` - Spanish translations (optional)
+- etc.
+
+### Example Localized Command Handler
+
+```csharp
+public class LocalizedCommandHandler : ICommandHandler
+{
+    private readonly LocalizationService _localization;
+    private readonly ITelegramBotClient _botClient;
+
+    public LocalizedCommandHandler(ITelegramBotClient botClient)
+    {
+        _localization = LocalizationService.Instance;
+        _botClient = botClient;
+    }
+
+    public async Task HandleCommandAsync(Message message)
+    {
+        switch (message.Text.ToLower())
+        {
+            case "/start":
+                await HandleStartCommand(message);
+                break;
+            case "/help":
+                await HandleHelpCommand(message);
+                break;
+            case "/settings":
+                await HandleSettingsCommand(message);
+                break;
+            case "/language":
+                await HandleLanguageCommand(message);
+                break;
+            default:
+                await HandleInvalidCommand(message);
+                break;
+        }
+    }
+
+    private async Task HandleStartCommand(Message message)
+    {
+        string welcomeMessage = _localization.GetString("WelcomeMessage");
+        await _botClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: welcomeMessage
+        );
+    }
+
+    private async Task HandleLanguageCommand(Message message)
+    {
+        var languageKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("English", "lang_en"),
+                InlineKeyboardButton.WithCallbackData("Deutsch", "lang_de")
+            }
+        });
+
+        await _botClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: _localization.GetString("SelectLanguage"),
+            replyMarkup: languageKeyboard
+        );
+    }
+}
+```
+
+### Adding New Languages
+
+To add support for a new language:
+
+1. Create a new resource file named `Strings.{culture-code}.resx` in the Resources directory
+2. Copy all string keys from `Strings.resx`
+3. Translate the values to the target language
+4. The culture code should follow the format: `{language}-{country}` (e.g., `fr-FR` for French)
+
+### Available Localized Strings
+
+The following strings are available by default:
+
+- `WelcomeMessage` - Welcome message
+- `StartCommand` - Start command description
+- `HelpCommand` - Help command description
+- `SettingsCommand` - Settings command description
+- `LanguageCommand` - Language command description
+- `LanguageChanged` - Language change confirmation
+- `InvalidCommand` - Invalid command message
+- `ErrorOccurred` - Error message template
+- `AvailableCommands` - Available commands header
+- `LanguageButton` - Language settings button
+- `ThemeButton` - Theme settings button
+- `SettingsMessage` - Settings menu message
+- `SelectLanguage` - Language selection prompt
+
 ## Project Structure
 
 The project is organized into several key namespaces:
