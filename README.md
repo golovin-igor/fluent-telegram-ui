@@ -281,6 +281,7 @@ string errorMessage = localization.GetString("ErrorOccurred", "Connection failed
 // Change the language at runtime
 localization.SetCulture("de"); // For German
 localization.SetCulture("en"); // For English
+localization.SetCulture("ru"); // For Russian
 ```
 
 ### Resource Files
@@ -289,6 +290,7 @@ Localization strings are stored in resource files (.resx) in the Resources direc
 
 - `Strings.resx` - Default English strings
 - `Strings.de.resx` - German translations
+- `Strings.ru.resx` - Russian translations
 - `Strings.fr.resx` - French translations (optional)
 - `Strings.es.resx` - Spanish translations (optional)
 - etc.
