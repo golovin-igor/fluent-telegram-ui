@@ -24,17 +24,17 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore FluentTelegramUI.sln
 
       - name: Check for outdated packages
-        run: dotnet list package --outdated --include-transitive
+        run: dotnet list FluentTelegramUI.sln package --outdated --include-transitive
         continue-on-error: true
 
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build FluentTelegramUI.sln --no-restore -c Release
 
       - name: Test
-        run: dotnet test --no-build -c Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: dotnet test FluentTelegramUI.sln --no-build -c Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -42,9 +42,6 @@ jobs:
           name: coverage
           path: coverage/**/coverage.cobertura.xml
           if-no-files-found: ignore
-
-      - name: Build samples
-        run: dotnet build samples/ --no-restore -c Release
 
       - name: Pack
         run: dotnet pack FluentTelegramUI/FluentTelegramUI.csproj --no-build -c Release

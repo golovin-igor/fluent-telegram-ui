@@ -33,14 +33,13 @@ ls FluentTelegramUI/bin/Release/*.nupkg
 
 ## Documentation site (GitHub Pages)
 
-The [Docs workflow](../.github/workflows/docs.yml) deploys Jekyll docs from `/docs` on every push to `main`.
+The [Docs workflow](../.github/workflows/docs.yml) validates Jekyll builds on every push and PR.
 
 ### One-time setup
 
-1. GitHub → **Settings** → **Pages**
-2. Source: **GitHub Actions**
-3. After the next push to `main`, the site publishes to  
-   `https://golovin-igor.github.io/fluent-telegram-ui/`
+1. GitHub → **Settings** → **Pages** → Source: **GitHub Actions**
+2. Run **Docs** workflow manually via **Actions → Docs → Run workflow** (deploy job runs only on `workflow_dispatch`)
+3. Site URL: `https://golovin-igor.github.io/fluent-telegram-ui/`
 
 Ensure `docs/_config.yml` `baseurl` matches the repository name.
 
