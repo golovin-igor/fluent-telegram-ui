@@ -15,6 +15,8 @@ Advanced features for complex bots built with FluentTelegramUI.
 
 - [Migrating from Telegram.Bot](migrating.html) — move an existing bot to FluentTelegramUI
 - [Localization](localization.html) — per-chat culture and resource-key screens
+- [State Management](state-management.html) — conversation and control state
+- [Handling Callbacks](handling-callbacks.html) — routing, wildcards, and custom handlers
 
 ## Samples
 

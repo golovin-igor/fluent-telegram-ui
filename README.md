@@ -94,6 +94,8 @@ Runnable examples live under [samples/](samples/):
 | `SimpleScreenBot` | `TelegramBotBuilder` + manual polling |
 | `HostedServiceBot` | `AddFluentTelegramUI()` + generic host |
 | `WebhookBot` | ASP.NET Core webhook endpoint |
+| `AdvancedComponentsBot` | Toggles, carousel, accordion, rating |
+| `LocalizedScreenBot` | English / German localized screens |
 
 ```bash
 export TELEGRAM_BOT_TOKEN="your-token"
