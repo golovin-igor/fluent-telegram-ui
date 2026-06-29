@@ -20,7 +20,7 @@ A modern, fluent-style UI framework for creating Telegram bots using C# .NET. Th
 
 ### Prerequisites
 
-- .NET 6.0 or later
+- .NET 10.0 or later
 - A Telegram Bot Token (get it from [@BotFather](https://t.me/botfather))
 
 ### Installation
@@ -527,10 +527,10 @@ For text input handlers, the context also includes:
 
 ## Dependencies
 
-- Microsoft.Extensions.DependencyInjection (7.0.0)
-- Microsoft.Extensions.Logging (7.0.0)
-- Telegram.Bot (19.0.0)
-- shortid (4.0.0)
+- Microsoft.Extensions.DependencyInjection (10.0.9)
+- Microsoft.Extensions.Logging (10.0.9)
+- Telegram.Bot (22.10.1)
+- shortid (5.1.1)
 
 ## Status
 

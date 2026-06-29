@@ -7,6 +7,7 @@ using FluentTelegramUI.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Telegram.Bot;
+using Telegram.Bot.Requests.Abstractions;
 using Telegram.Bot.Types;
 using Xunit;
 
@@ -91,25 +92,14 @@ namespace FluentTelegramUI.Tests
             };
             var cancellationToken = CancellationToken.None;
             
-            botClientMock.Setup(m => m.AnswerCallbackQuery(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<bool>(),
-                It.IsAny<string>(),
-                It.IsAny<int?>(),
-                It.IsAny<CancellationToken>()
-            )).Returns(Task.CompletedTask);
+            botClientMock.SetupAnswerCallbackQuery();
             
             // Act
             await _handler.HandleCallbackQueryAsync(botClientMock.Object, callbackQuery, cancellationToken);
             
             // Assert
-            botClientMock.Verify(m => m.AnswerCallbackQuery(
-                "callback-id",
-                It.IsAny<string>(),
-                It.IsAny<bool>(),
-                It.IsAny<string>(),
-                It.IsAny<int?>(),
+            botClientMock.Verify(m => m.SendRequest(
+                It.IsAny<IRequest<bool>>(),
                 cancellationToken
             ), Times.Once);
         }

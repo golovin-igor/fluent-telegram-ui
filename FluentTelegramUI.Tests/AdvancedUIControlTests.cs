@@ -22,7 +22,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             toggle.Id.Should().NotBeNullOrEmpty();
-            toggle.Id.Length.Should().BeLessOrEqualTo(7);
+            toggle.Id.Length.Should().BeLessThanOrEqualTo(7);
             toggle.Label.Should().Be(label);
             toggle.CallbackData.Should().Be(callbackData);
             toggle.IsOn.Should().Be(isOn);
@@ -99,7 +99,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             carousel.Id.Should().NotBeNullOrEmpty();
-            carousel.Id.Length.Should().BeLessOrEqualTo(7);
+            carousel.Id.Length.Should().BeLessThanOrEqualTo(7);
             carousel.ImageUrls.Should().BeEquivalentTo(imageUrls);
             carousel.Captions.Should().BeEquivalentTo(captions);
             carousel.CurrentIndex.Should().Be(0);
@@ -192,7 +192,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             indicator.Id.Should().NotBeNullOrEmpty();
-            indicator.Id.Length.Should().BeLessOrEqualTo(7);
+            indicator.Id.Length.Should().BeLessThanOrEqualTo(7);
             indicator.Label.Should().Be(label);
             indicator.Progress.Should().Be(progress);
             indicator.ShowPercentage.Should().BeTrue();
@@ -262,7 +262,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             accordion.Id.Should().NotBeNullOrEmpty();
-            accordion.Id.Length.Should().BeLessOrEqualTo(7);
+            accordion.Id.Length.Should().BeLessThanOrEqualTo(7);
             accordion.Title.Should().Be(title);
             accordion.Content.Should().Be(content);
             accordion.IsExpanded.Should().Be(isExpanded);
@@ -307,7 +307,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             richText.Id.Should().NotBeNullOrEmpty();
-            richText.Id.Length.Should().BeLessOrEqualTo(7);
+            richText.Id.Length.Should().BeLessThanOrEqualTo(7);
             richText.Text.Should().Be(text);
             richText.IsBold.Should().BeFalse();
             richText.IsItalic.Should().BeFalse();
@@ -393,7 +393,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             rating.Id.Should().NotBeNullOrEmpty();
-            rating.Id.Length.Should().BeLessOrEqualTo(7);
+            rating.Id.Length.Should().BeLessThanOrEqualTo(7);
             rating.Label.Should().Be(label);
             rating.CallbackDataPrefix.Should().Be(callbackDataPrefix);
             rating.Value.Should().Be(initialValue);

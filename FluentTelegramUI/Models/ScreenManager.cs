@@ -145,7 +145,7 @@ namespace FluentTelegramUI.Models
             {
                 try
                 {
-                    await _botClient.DeleteMessageAsync(
+                    await _botClient.DeleteMessage(
                         chatId: chatId,
                         messageId: navState.LastMessageId,
                         cancellationToken: cancellationToken);

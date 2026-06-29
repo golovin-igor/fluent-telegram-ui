@@ -33,7 +33,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             button.Id.Should().NotBeNullOrEmpty();
-            button.Id.Length.Should().BeLessOrEqualTo(7);
+            button.Id.Length.Should().BeLessThanOrEqualTo(7);
             button.Text.Should().Be(text);
             button.CallbackData.Should().Be(callbackData);
             button.Style.Should().Be(FluentStyle.Default);
@@ -74,7 +74,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             buttonGroup.Id.Should().NotBeNullOrEmpty();
-            buttonGroup.Id.Length.Should().BeLessOrEqualTo(7);
+            buttonGroup.Id.Length.Should().BeLessThanOrEqualTo(7);
             buttonGroup.Buttons.Should().HaveSameCount(buttons);
             buttonGroup.Buttons.Should().Contain(buttons);
             buttonGroup.ButtonsPerRow.Should().Be(buttonsPerRow);
@@ -130,7 +130,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             textInput.Id.Should().NotBeNullOrEmpty();
-            textInput.Id.Length.Should().BeLessOrEqualTo(7);
+            textInput.Id.Length.Should().BeLessThanOrEqualTo(7);
             textInput.Label.Should().Be(label);
             textInput.Placeholder.Should().Be(placeholder);
             textInput.Style.Should().Be(FluentStyle.Default);
