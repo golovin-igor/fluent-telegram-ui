@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentTelegramUI.Resources;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -21,6 +22,7 @@ namespace FluentTelegramUI.Models
         private readonly Dictionary<string, Screen> _registeredScreens = new();
         private readonly StateMachine _stateMachine;
         private readonly FluentStyle _defaultStyle;
+        private readonly ILocalizationService? _localization;
 
         /// <summary>
         /// Gets the main screen from which navigation starts
@@ -47,12 +49,14 @@ namespace FluentTelegramUI.Models
             ITelegramBotClient botClient,
             ILogger<ScreenManager> logger,
             StateMachine stateMachine,
-            FluentStyle defaultStyle = FluentStyle.Default)
+            FluentStyle defaultStyle = FluentStyle.Default,
+            ILocalizationService? localization = null)
         {
             _botClient = botClient;
             _logger = logger;
             _stateMachine = stateMachine;
             _defaultStyle = defaultStyle;
+            _localization = localization;
         }
 
         /// <summary>
@@ -318,7 +322,7 @@ namespace FluentTelegramUI.Models
                 allButtons.AddRange(controlMsg.Buttons);
             }
 
-            var body = mainMessage.Text;
+            var body = ResolveContentText(chatId, mainMessage.Text, screen.ContentResourceKey);
             if (bodyParts.Count > 0)
             {
                 body = string.IsNullOrEmpty(body)
@@ -327,7 +331,7 @@ namespace FluentTelegramUI.Models
             }
 
             body = FluentStyleTemplates.ApplyBody(style, body);
-            var title = FluentStyleTemplates.ApplyTitle(style, screen.Title);
+            var title = FluentStyleTemplates.ApplyTitle(style, ResolveTitleText(chatId, screen));
             var text = !string.IsNullOrEmpty(title) ? $"<b>{title}</b>\n\n{body}" : body;
 
             return new Message
@@ -340,6 +344,26 @@ namespace FluentTelegramUI.Models
                 ImageUrl = mainMessage.ImageUrl,
                 ImageCaption = mainMessage.ImageCaption
             };
+        }
+
+        private string ResolveTitleText(long chatId, Screen screen)
+        {
+            if (!string.IsNullOrEmpty(screen.TitleResourceKey) && _localization != null)
+            {
+                return _localization.GetString(chatId, screen.TitleResourceKey);
+            }
+
+            return screen.Title;
+        }
+
+        private string ResolveContentText(long chatId, string? text, string? resourceKey)
+        {
+            if (!string.IsNullOrEmpty(resourceKey) && _localization != null)
+            {
+                return _localization.GetString(chatId, resourceKey);
+            }
+
+            return text ?? string.Empty;
         }
 
         private static Dictionary<string, object> BuildContext(long chatId, CallbackQuery callbackQuery)

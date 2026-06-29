@@ -15,10 +15,25 @@ namespace FluentTelegramUI.Models
         /// </summary>
         public string Id { get; set; } = IdGenerator.GenerateShortId();
         
-        /// <summary>
-        /// The title of the screen
-        /// </summary>
-        public string Title { get; set; } = string.Empty;
+    /// <summary>
+    /// The title of the screen
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional resource key for localizing <see cref="Title"/>.
+    /// </summary>
+    public string? TitleResourceKey { get; set; }
+
+    /// <summary>
+    /// Optional resource key for localizing screen body text.
+    /// </summary>
+    public string? ContentResourceKey { get; set; }
+
+    /// <summary>
+    /// Optional resource key for localizing <see cref="BackButtonText"/>.
+    /// </summary>
+    public string? BackButtonResourceKey { get; set; }
         
         /// <summary>
         /// The main content message of the screen

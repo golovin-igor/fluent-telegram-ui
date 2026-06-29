@@ -14,12 +14,12 @@ namespace FluentTelegramUI.Handlers
 
     public class LocalizedCommandHandler : ICommandHandler
     {
-        private readonly LocalizationService _localization;
+        private readonly ILocalizationService _localization;
         private readonly ITelegramBotClient _botClient;
 
-        public LocalizedCommandHandler(ITelegramBotClient botClient)
+        public LocalizedCommandHandler(ITelegramBotClient botClient, ILocalizationService? localization = null)
         {
-            _localization = LocalizationService.Instance;
+            _localization = localization ?? LocalizationService.Instance;
             _botClient = botClient;
         }
 
@@ -49,7 +49,7 @@ namespace FluentTelegramUI.Handlers
 
         private async Task HandleStartCommand(Message message)
         {
-            string welcomeMessage = _localization.GetString("WelcomeMessage");
+            string welcomeMessage = _localization.GetString(message.Chat.Id, "WelcomeMessage");
             await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: welcomeMessage
@@ -58,12 +58,13 @@ namespace FluentTelegramUI.Handlers
 
         private async Task HandleHelpCommand(Message message)
         {
+            var chatId = message.Chat.Id;
             var helpText = new StringBuilder();
-            helpText.AppendLine(_localization.GetString("AvailableCommands"));
-            helpText.AppendLine($"/start - {_localization.GetString("StartCommand")}");
-            helpText.AppendLine($"/help - {_localization.GetString("HelpCommand")}");
-            helpText.AppendLine($"/settings - {_localization.GetString("SettingsCommand")}");
-            helpText.AppendLine($"/language - {_localization.GetString("LanguageCommand")}");
+            helpText.AppendLine(_localization.GetString(chatId, "AvailableCommands"));
+            helpText.AppendLine($"/start - {_localization.GetString(chatId, "StartCommand")}");
+            helpText.AppendLine($"/help - {_localization.GetString(chatId, "HelpCommand")}");
+            helpText.AppendLine($"/settings - {_localization.GetString(chatId, "SettingsCommand")}");
+            helpText.AppendLine($"/language - {_localization.GetString(chatId, "LanguageCommand")}");
 
             await _botClient.SendMessage(
                 chatId: message.Chat.Id,
@@ -73,18 +74,19 @@ namespace FluentTelegramUI.Handlers
 
         private async Task HandleSettingsCommand(Message message)
         {
+            var chatId = message.Chat.Id;
             var settingsKeyboard = new ReplyKeyboardMarkup(new[]
             {
-                new KeyboardButton[] { _localization.GetString("LanguageButton") },
-                new KeyboardButton[] { _localization.GetString("ThemeButton") }
+                new KeyboardButton[] { _localization.GetString(chatId, "LanguageButton") },
+                new KeyboardButton[] { _localization.GetString(chatId, "ThemeButton") }
             })
             {
                 ResizeKeyboard = true
             };
 
             await _botClient.SendMessage(
-                chatId: message.Chat.Id,
-                text: _localization.GetString("SettingsMessage"),
+                chatId: chatId,
+                text: _localization.GetString(chatId, "SettingsMessage"),
                 replyMarkup: settingsKeyboard
             );
         }
@@ -102,7 +104,7 @@ namespace FluentTelegramUI.Handlers
 
             await _botClient.SendMessage(
                 chatId: message.Chat.Id,
-                text: _localization.GetString("SelectLanguage"),
+                text: _localization.GetString(message.Chat.Id, "SelectLanguage"),
                 replyMarkup: languageKeyboard
             );
         }
@@ -111,7 +113,7 @@ namespace FluentTelegramUI.Handlers
         {
             await _botClient.SendMessage(
                 chatId: message.Chat.Id,
-                text: _localization.GetString("InvalidCommand")
+                text: _localization.GetString(message.Chat.Id, "InvalidCommand")
             );
         }
     }
