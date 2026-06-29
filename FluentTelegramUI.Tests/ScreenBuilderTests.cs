@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentTelegramUI;
 using FluentTelegramUI.Builders;
 using FluentTelegramUI.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Telegram.Bot;
 using Xunit;
 using System.Collections.Generic;
 
@@ -11,13 +14,23 @@ namespace FluentTelegramUI.Tests
 {
     public class ScreenBuilderTests
     {
-        private readonly Mock<FluentTelegramBot> _botMock;
+        private readonly FluentTelegramBot _bot;
         private readonly ScreenBuilder _builder;
         
         public ScreenBuilderTests()
         {
-            _botMock = new Mock<FluentTelegramBot>();
-            _builder = new ScreenBuilder(_botMock.Object, "Test Screen");
+            _bot = CreateTestBot();
+            _builder = new ScreenBuilder(_bot, "Test Screen");
+        }
+
+        private static FluentTelegramBot CreateTestBot()
+        {
+            var botClientMock = new Mock<ITelegramBotClient>();
+            botClientMock.SetupSendMessage();
+            var services = new ServiceCollection()
+                .AddSingleton(botClientMock.Object)
+                .BuildServiceProvider();
+            return new FluentTelegramBot(services);
         }
         
         [Fact]
@@ -29,7 +42,8 @@ namespace FluentTelegramUI.Tests
             // Assert
             screen.Should().NotBeNull();
             screen.Title.Should().Be("Test Screen");
-            _botMock.Verify(b => b.RegisterScreen(It.IsAny<Screen>(), It.IsAny<bool>()), Times.Once);
+            _bot.TryGetScreen(screen.Id, out var registered).Should().BeTrue();
+            registered.Should().NotBeNull();
         }
         
         [Fact]
@@ -204,7 +218,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             screen.IsMainScreen.Should().BeTrue();
-            _botMock.Verify(b => b.SetMainScreen(It.IsAny<Screen>()), Times.Once);
+            _bot.MainScreen.Should().BeSameAs(screen);
         }
         
         [Fact]

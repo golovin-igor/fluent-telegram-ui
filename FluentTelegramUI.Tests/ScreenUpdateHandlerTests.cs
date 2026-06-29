@@ -16,28 +16,35 @@ namespace FluentTelegramUI.Tests
     public class ScreenUpdateHandlerTests
     {
         private readonly Mock<ILogger<ScreenUpdateHandler>> _loggerMock;
-        private readonly Mock<ScreenManager> _screenManagerMock;
+        private readonly Mock<ITelegramBotClient> _botClientMock;
+        private readonly ScreenManager _screenManager;
         private readonly ScreenUpdateHandler _handler;
         
         public ScreenUpdateHandlerTests()
         {
             _loggerMock = new Mock<ILogger<ScreenUpdateHandler>>();
-            _screenManagerMock = new Mock<ScreenManager>();
-            _handler = new ScreenUpdateHandler(_loggerMock.Object, _screenManagerMock.Object);
+            _botClientMock = new Mock<ITelegramBotClient>();
+            _botClientMock.SetupSendMessage();
+            var screenManagerLogger = new Mock<ILogger<ScreenManager>>();
+            _screenManager = new ScreenManager(_botClientMock.Object, screenManagerLogger.Object);
+            _handler = new ScreenUpdateHandler(_loggerMock.Object, _screenManager);
         }
         
         [Fact]
         public void ScreenUpdateHandler_Constructor_InitializesProperties()
         {
-            // Assert
             _handler.Should().BeAssignableTo<IFluentUpdateHandler>();
         }
         
         [Fact]
         public async Task ScreenUpdateHandler_HandleTextMessageAsync_NavigatesToMainScreen_ForStartCommand()
         {
-            // Arrange
-            var botClientMock = new Mock<ITelegramBotClient>();
+            var mainScreen = new Screen { Title = "Main" };
+            _screenManager.RegisterScreen(mainScreen, true);
+
+            var messageCount = 0;
+            _botClientMock.SetupSendMessage(() => messageCount++);
+
             var message = new Telegram.Bot.Types.Message
             {
                 Text = "/start",
@@ -45,23 +52,17 @@ namespace FluentTelegramUI.Tests
             };
             var cancellationToken = CancellationToken.None;
             
-            _screenManagerMock.Setup(m => m.NavigateToMainScreenAsync(
-                It.IsAny<long>(), 
-                It.IsAny<CancellationToken>()
-            )).Returns(Task.CompletedTask);
+            await _handler.HandleTextMessageAsync(_botClientMock.Object, message, cancellationToken);
             
-            // Act
-            await _handler.HandleTextMessageAsync(botClientMock.Object, message, cancellationToken);
-            
-            // Assert
-            _screenManagerMock.Verify(m => m.NavigateToMainScreenAsync(123, cancellationToken), Times.Once);
+            messageCount.Should().Be(1);
         }
         
         [Fact]
         public async Task ScreenUpdateHandler_HandleTextMessageAsync_DoesNotNavigate_ForOtherMessages()
         {
-            // Arrange
-            var botClientMock = new Mock<ITelegramBotClient>();
+            var messageCount = 0;
+            _botClientMock.SetupSendMessage(() => messageCount++);
+
             var message = new Telegram.Bot.Types.Message
             {
                 Text = "Hello, world!",
@@ -69,20 +70,14 @@ namespace FluentTelegramUI.Tests
             };
             var cancellationToken = CancellationToken.None;
             
-            // Act
-            await _handler.HandleTextMessageAsync(botClientMock.Object, message, cancellationToken);
+            await _handler.HandleTextMessageAsync(_botClientMock.Object, message, cancellationToken);
             
-            // Assert
-            _screenManagerMock.Verify(m => m.NavigateToMainScreenAsync(
-                It.IsAny<long>(), 
-                It.IsAny<CancellationToken>()
-            ), Times.Never);
+            messageCount.Should().Be(0);
         }
         
         [Fact]
         public async Task ScreenUpdateHandler_HandleCallbackQueryAsync_AnswersCallbackQuery()
         {
-            // Arrange
             var botClientMock = new Mock<ITelegramBotClient>();
             var callbackQuery = new CallbackQuery
             {
@@ -94,10 +89,8 @@ namespace FluentTelegramUI.Tests
             
             botClientMock.SetupAnswerCallbackQuery();
             
-            // Act
             await _handler.HandleCallbackQueryAsync(botClientMock.Object, callbackQuery, cancellationToken);
             
-            // Assert
             botClientMock.Verify(m => m.SendRequest(
                 It.IsAny<IRequest<bool>>(),
                 cancellationToken
@@ -107,16 +100,13 @@ namespace FluentTelegramUI.Tests
         [Fact]
         public async Task ScreenUpdateHandler_HandlePollingErrorAsync_LogsError()
         {
-            // Arrange
             var botClientMock = new Mock<ITelegramBotClient>();
             var exception = new Exception("Test error");
             var cancellationToken = CancellationToken.None;
             
-            // Act
             await _handler.HandlePollingErrorAsync(botClientMock.Object, exception, cancellationToken);
             
-            // Assert
             _loggerMock.Invocations.Should().NotBeEmpty();
         }
     }
-} 
+}
