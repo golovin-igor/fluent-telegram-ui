@@ -75,20 +75,17 @@ namespace FluentTelegramUI.Handlers
                     bool result = await handler(message.Text, context);
                     if (result)
                     {
-                        // Refresh the screen if the handler returns true
-                        await _screenManager.NavigateToScreenAsync(message.Chat.Id, currentScreen, cancellationToken);
+                        await _screenManager.RefreshCurrentScreenAsync(message.Chat.Id, cancellationToken);
                     }
                 }
             }
         }
         
         /// <inheritdoc/>
-        public virtual async Task HandleCallbackQueryAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+        public virtual Task HandleCallbackQueryAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Received callback query: {callbackQuery.Data}");
-            
-            // The ScreenManager already handles the callback, just answer it
-            await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+            _logger.LogInformation("Received callback query: {Data}", callbackQuery.Data);
+            return botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
         }
         
         /// <inheritdoc/>

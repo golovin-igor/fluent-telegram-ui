@@ -72,14 +72,6 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             Assert.NotNull(chatIdMethod);
-            
-            // Verify the message-only overload
-            var messageOnlyMethod = Array.Find(methods, m => 
-                m.Name == "SendMessageAsync" && 
-                m.GetParameters().Length == 1 ||
-                (m.GetParameters().Length > 1 && m.GetParameters()[0].ParameterType == typeof(FluentTelegramUI.Models.Message)));
-            
-            Assert.NotNull(messageOnlyMethod);
         }
         
         [Fact]

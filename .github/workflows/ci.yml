@@ -35,3 +35,6 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build -c Release --verbosity normal
+
+      - name: Pack
+        run: dotnet pack FluentTelegramUI/FluentTelegramUI.csproj --no-build -c Release

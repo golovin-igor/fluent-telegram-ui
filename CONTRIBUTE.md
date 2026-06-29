@@ -6,7 +6,7 @@ Thank you for your interest in contributing to FluentTelegramUI! This document o
 
 ### Prerequisites
 
-- .NET 6.0 SDK or later
+- .NET 10.0 SDK or later
 - A Telegram Bot Token for testing (from [@BotFather](https://t.me/botfather))
 - Git installed on your local machine
 - An IDE with C# support (Visual Studio, VS Code with C# extension, Rider, etc.)

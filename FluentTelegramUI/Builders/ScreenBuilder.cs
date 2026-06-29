@@ -220,8 +220,9 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder AddToggle(string label, string callbackData, bool isOn = false)
         {
-            var toggle = new Toggle(label, callbackData, isOn);
+            var toggle = new Toggle(label, callbackData, isOn) { Id = callbackData };
             _screen.AddControl(toggle);
+            WithToggleHandler(callbackData);
             return this;
         }
         
@@ -235,6 +236,7 @@ namespace FluentTelegramUI.Builders
         {
             var carousel = new ImageCarousel(imageUrls, captions);
             _screen.AddControl(carousel);
+            WithCarouselHandler(carousel.Id);
             return this;
         }
         
@@ -262,6 +264,7 @@ namespace FluentTelegramUI.Builders
         {
             var accordion = new Accordion(title, content, isExpanded);
             _screen.AddControl(accordion);
+            WithAccordionHandler(accordion.Id);
             return this;
         }
         
@@ -297,8 +300,24 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder AddRating(string label, string callbackDataPrefix, int initialValue = 0)
         {
-            var rating = new Rating(label, callbackDataPrefix, initialValue);
+            var rating = new Rating(label, callbackDataPrefix, initialValue) { Id = callbackDataPrefix };
             _screen.AddControl(rating);
+            _screen.OnCallback($"{callbackDataPrefix}:*", async (data, state) =>
+            {
+                if (!TryGetChatId(state, out var chatId))
+                {
+                    return true;
+                }
+
+                var parts = data.Split(':');
+                if (parts.Length == 2 && int.TryParse(parts[1], out var value))
+                {
+                    _bot.ScreenManager.SetControlState(chatId, _screen.Id, callbackDataPrefix, "value", value);
+                    await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
+                }
+
+                return true;
+            });
             return this;
         }
         
@@ -309,35 +328,48 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithCarouselHandler(string carouselId)
         {
-            // Add handlers for carousel navigation
-            _screen.OnCallback($"carousel:{carouselId}:prev", async (data, state) => 
+            _screen.OnCallback($"carousel:{carouselId}:prev", async (data, state) =>
             {
-                var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
-                if (carouselControl != null && carouselControl.CurrentIndex > 0)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    carouselControl.CurrentIndex--;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    return true;
+                }
+
+                var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
+                if (carouselControl != null)
+                {
+                    var index = _bot.ScreenManager.GetControlState(chatId, _screen.Id, carouselId, "index", carouselControl.CurrentIndex);
+                    if (index > 0)
                     {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                        _bot.ScreenManager.SetControlState(chatId, _screen.Id, carouselId, "index", index - 1);
+                        await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                     }
                 }
+
                 return true;
             });
-            
-            _screen.OnCallback($"carousel:{carouselId}:next", async (data, state) => 
+
+            _screen.OnCallback($"carousel:{carouselId}:next", async (data, state) =>
             {
-                var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
-                if (carouselControl != null && carouselControl.CurrentIndex < carouselControl.ImageUrls.Count - 1)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    carouselControl.CurrentIndex++;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
+                    return true;
+                }
+
+                var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
+                if (carouselControl != null)
+                {
+                    var index = _bot.ScreenManager.GetControlState(chatId, _screen.Id, carouselId, "index", carouselControl.CurrentIndex);
+                    if (index < carouselControl.ImageUrls.Count - 1)
                     {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
+                        _bot.ScreenManager.SetControlState(chatId, _screen.Id, carouselId, "index", index + 1);
+                        await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                     }
                 }
+
                 return true;
             });
-            
+
             return this;
         }
         
@@ -348,34 +380,30 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithToggleHandler(string toggleId)
         {
-            _screen.OnCallback($"{toggleId}:on", async (data, state) => 
+            _screen.OnCallback($"{toggleId}:on", async (data, state) =>
             {
-                var toggleControl = _screen.Controls.FirstOrDefault(c => c.Id == toggleId) as Toggle;
-                if (toggleControl != null)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    toggleControl.IsOn = true;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
-                    {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
-                    }
+                    return true;
                 }
+
+                _bot.ScreenManager.SetControlState(chatId, _screen.Id, toggleId, "isOn", true);
+                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                 return true;
             });
-            
-            _screen.OnCallback($"{toggleId}:off", async (data, state) => 
+
+            _screen.OnCallback($"{toggleId}:off", async (data, state) =>
             {
-                var toggleControl = _screen.Controls.FirstOrDefault(c => c.Id == toggleId) as Toggle;
-                if (toggleControl != null)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    toggleControl.IsOn = false;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
-                    {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
-                    }
+                    return true;
                 }
+
+                _bot.ScreenManager.SetControlState(chatId, _screen.Id, toggleId, "isOn", false);
+                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                 return true;
             });
-            
+
             return this;
         }
         
@@ -386,35 +414,43 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithAccordionHandler(string accordionId)
         {
-            _screen.OnCallback($"accordion:{accordionId}:expand", async (data, state) => 
+            _screen.OnCallback($"accordion:{accordionId}:expand", async (data, state) =>
             {
-                var accordionControl = _screen.Controls.FirstOrDefault(c => c.Id == accordionId) as Accordion;
-                if (accordionControl != null)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    accordionControl.IsExpanded = true;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
-                    {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
-                    }
+                    return true;
                 }
+
+                _bot.ScreenManager.SetControlState(chatId, _screen.Id, accordionId, "expanded", true);
+                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                 return true;
             });
-            
-            _screen.OnCallback($"accordion:{accordionId}:collapse", async (data, state) => 
+
+            _screen.OnCallback($"accordion:{accordionId}:collapse", async (data, state) =>
             {
-                var accordionControl = _screen.Controls.FirstOrDefault(c => c.Id == accordionId) as Accordion;
-                if (accordionControl != null)
+                if (!TryGetChatId(state, out var chatId))
                 {
-                    accordionControl.IsExpanded = false;
-                    if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long chatId)
-                    {
-                        await _bot.NavigateToScreenAsync(chatId, _screen.Id);
-                    }
+                    return true;
                 }
+
+                _bot.ScreenManager.SetControlState(chatId, _screen.Id, accordionId, "expanded", false);
+                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                 return true;
             });
-            
+
             return this;
+        }
+
+        private static bool TryGetChatId(Dictionary<string, object> state, out long chatId)
+        {
+            if (state.TryGetValue("chatId", out var chatIdObj) && chatIdObj is long value)
+            {
+                chatId = value;
+                return true;
+            }
+
+            chatId = 0;
+            return false;
         }
         
         /// <summary>

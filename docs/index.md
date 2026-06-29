@@ -48,17 +48,11 @@ FluentTelegramUI is designed to be easy to use, with a minimal learning curve. H
 
 ```csharp
 using FluentTelegramUI;
-using Microsoft.Extensions.DependencyInjection;
-
-// Configure services
-var services = new ServiceCollection()
-    .AddSingleton<ITelegramBotClient>(new TelegramBotClient("YOUR_BOT_TOKEN"))
-    .AddLogging()
-    .BuildServiceProvider();
+using Telegram.Bot;
 
 // Create a bot
 var bot = new TelegramBotBuilder()
-    .WithServiceProvider(services)
+    .WithToken("YOUR_BOT_TOKEN")
     .WithFluentUI()
     .Build();
 

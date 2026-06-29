@@ -34,6 +34,7 @@ dotnet add package FluentTelegramUI
 ```csharp
 using FluentTelegramUI;
 using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot;
 
 // Configure services
 var services = new ServiceCollection()
@@ -43,7 +44,7 @@ var services = new ServiceCollection()
 
 // Create a bot
 var bot = new TelegramBotBuilder()
-    .WithServiceProvider(services)
+    .WithToken("YOUR_BOT_TOKEN")
     .WithFluentUI()
     .Build();
 

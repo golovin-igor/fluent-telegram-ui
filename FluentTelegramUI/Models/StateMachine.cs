@@ -6,7 +6,7 @@ namespace FluentTelegramUI.Models
     /// <summary>
     /// Manages state for conversations across different users/chats
     /// </summary>
-    public class StateMachine
+    public class StateMachine : IStateStore
     {
         private readonly Dictionary<long, Dictionary<string, object>> _states = new();
         private readonly Dictionary<long, string> _currentScreens = new();
@@ -19,7 +19,7 @@ namespace FluentTelegramUI.Models
         /// <param name="key">The state variable key</param>
         /// <param name="defaultValue">The default value to return if the state variable doesn't exist</param>
         /// <returns>The state variable value or the default value</returns>
-        public T GetState<T>(long chatId, string key, T defaultValue = default)
+        public T GetState<T>(long chatId, string key, T defaultValue = default!)
         {
             if (_states.TryGetValue(chatId, out var chatState) && 
                 chatState.TryGetValue(key, out var value) &&
@@ -85,7 +85,7 @@ namespace FluentTelegramUI.Models
         /// </summary>
         /// <param name="chatId">The chat ID</param>
         /// <returns>The screen ID or null if not set</returns>
-        public string GetCurrentScreen(long chatId)
+        public string? GetCurrentScreen(long chatId)
         {
             return _currentScreens.TryGetValue(chatId, out var screenId) ? screenId : null;
         }

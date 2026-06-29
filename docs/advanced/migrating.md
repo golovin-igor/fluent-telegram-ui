@@ -61,17 +61,11 @@ botClient.StartReceiving(
 
 ```csharp
 using FluentTelegramUI;
-using Microsoft.Extensions.DependencyInjection;
-
-// Set up dependency injection
-var services = new ServiceCollection()
-    .AddSingleton<ITelegramBotClient>(new TelegramBotClient("YOUR_BOT_TOKEN"))
-    .AddLogging()
-    .BuildServiceProvider();
+using Telegram.Bot;
 
 // Create the bot with the fluent builder
 var bot = new TelegramBotBuilder()
-    .WithServiceProvider(services)
+    .WithToken("YOUR_BOT_TOKEN")
     .WithFluentUI()
     .Build();
 
@@ -343,12 +337,12 @@ You may not need to migrate your entire bot at once. Consider an incremental app
 ```csharp
 // Create FluentTelegramUI bot
 var fluentBot = new TelegramBotBuilder()
-    .WithServiceProvider(services)
+    .WithToken("YOUR_BOT_TOKEN")
     .WithFluentUI()
     .Build();
 
 // Keep a reference to the Telegram.Bot client for legacy code
-var botClient = services.GetRequiredService<ITelegramBotClient>();
+var botClient = fluentBot.GetRequiredService<ITelegramBotClient>();
 
 // Set a custom update handler for non-migrated parts
 fluentBot.SetCustomUpdateHandler(async (update, cancellationToken) => {

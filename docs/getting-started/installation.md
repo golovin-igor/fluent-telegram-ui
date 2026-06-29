@@ -22,7 +22,7 @@ nav_order: 1
 
 Before installing FluentTelegramUI, make sure you have the following:
 
-- [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) or later installed
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later installed
 - A Telegram Bot Token (obtained from [@BotFather](https://t.me/botfather))
 - Basic familiarity with C# and .NET development
 

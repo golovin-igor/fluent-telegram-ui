@@ -22,6 +22,12 @@ namespace FluentTelegramUI.Models
         /// Converts the control to a Message object for rendering
         /// </summary>
         /// <returns>A Message object</returns>
+        public virtual Message ToMessage(ScreenRenderContext context) => ToMessage();
+
+        /// <summary>
+        /// Converts the control to a Message object for rendering
+        /// </summary>
+        /// <returns>A Message object</returns>
         public abstract Message ToMessage();
     }
     
@@ -207,13 +213,19 @@ namespace FluentTelegramUI.Models
         /// <returns>A Message object</returns>
         public override Message ToMessage()
         {
-            string stateText = IsOn ? OnText : OffText;
-            string fullCallbackData = $"{CallbackData}:{(IsOn ? "off" : "on")}";
-            
+            return ToMessage(new ScreenRenderContext(0, new Screen(), (_, defaultValue) => defaultValue!));
+        }
+
+        public override Message ToMessage(ScreenRenderContext context)
+        {
+            bool isOn = context.GetControlState(this, "isOn", IsOn);
+            string stateText = isOn ? OnText : OffText;
+            string fullCallbackData = $"{CallbackData}:{(isOn ? "off" : "on")}";
+
             return new Message
             {
                 Text = $"{Label}: {stateText}",
-                Buttons = new() { new Button { Text = IsOn ? $"Turn {OffText}" : $"Turn {OnText}", CallbackData = fullCallbackData, Style = Style } }
+                Buttons = new() { new Button { Text = isOn ? $"Turn {OffText}" : $"Turn {OnText}", CallbackData = fullCallbackData, Style = Style } }
             };
         }
     }
@@ -273,32 +285,39 @@ namespace FluentTelegramUI.Models
         /// <returns>A Message object</returns>
         public override Message ToMessage()
         {
+            return ToMessage(new ScreenRenderContext(0, new Screen(), (_, defaultValue) => defaultValue!));
+        }
+
+        public override Message ToMessage(ScreenRenderContext context)
+        {
+            int currentIndex = context.GetControlState(this, "index", CurrentIndex);
+            currentIndex = Math.Clamp(currentIndex, 0, Math.Max(ImageUrls.Count - 1, 0));
+
             var message = new Message
             {
-                Text = Captions[CurrentIndex],
-                ImageUrl = ImageUrls[CurrentIndex],
+                Text = Captions[currentIndex],
+                ImageUrl = ImageUrls[currentIndex],
                 Style = Style,
                 Buttons = new()
             };
-            
-            // Add navigation buttons if we have multiple images
+
             if (ImageUrls.Count > 1)
             {
-                if (CurrentIndex > 0)
+                if (currentIndex > 0)
                 {
                     message.Buttons.Add(new Button { Text = "◀️ Prev", CallbackData = $"carousel:{Id}:prev" });
                 }
-                
-                message.Buttons.Add(new Button { Text = $"{CurrentIndex + 1}/{ImageUrls.Count}", CallbackData = $"carousel:{Id}:info" });
-                
-                if (CurrentIndex < ImageUrls.Count - 1)
+
+                message.Buttons.Add(new Button { Text = $"{currentIndex + 1}/{ImageUrls.Count}", CallbackData = $"carousel:{Id}:info" });
+
+                if (currentIndex < ImageUrls.Count - 1)
                 {
                     message.Buttons.Add(new Button { Text = "Next ▶️", CallbackData = $"carousel:{Id}:next" });
                 }
-                
+
                 message.ButtonsPerRow = 3;
             }
-            
+
             return message;
         }
     }
@@ -410,12 +429,18 @@ namespace FluentTelegramUI.Models
         /// <returns>A Message object</returns>
         public override Message ToMessage()
         {
-            string buttonText = IsExpanded ? "▼ Collapse" : "▶ Expand";
-            string callbackData = $"accordion:{Id}:{(IsExpanded ? "collapse" : "expand")}";
-            
+            return ToMessage(new ScreenRenderContext(0, new Screen(), (_, defaultValue) => defaultValue!));
+        }
+
+        public override Message ToMessage(ScreenRenderContext context)
+        {
+            bool isExpanded = context.GetControlState(this, "expanded", IsExpanded);
+            string buttonText = isExpanded ? "▼ Collapse" : "▶ Expand";
+            string callbackData = $"accordion:{Id}:{(isExpanded ? "collapse" : "expand")}";
+
             return new Message
             {
-                Text = IsExpanded ? $"*{Title}*\n\n{Content}" : $"*{Title}*",
+                Text = isExpanded ? $"<b>{Title}</b>\n\n{Content}" : $"<b>{Title}</b>",
                 ParseMarkdown = true,
                 Style = Style,
                 Buttons = new() { new Button { Text = buttonText, CallbackData = callbackData } }
@@ -564,23 +589,28 @@ namespace FluentTelegramUI.Models
         /// <returns>A Message object</returns>
         public override Message ToMessage()
         {
+            return ToMessage(new ScreenRenderContext(0, new Screen(), (_, defaultValue) => defaultValue!));
+        }
+
+        public override Message ToMessage(ScreenRenderContext context)
+        {
+            int value = context.GetControlState(this, "value", Value);
             var message = new Message
             {
-                Text = $"{Label}: {(Value > 0 ? string.Concat(Enumerable.Repeat("⭐", Value)) : "Not rated")}",
+                Text = $"{Label}: {(value > 0 ? string.Concat(Enumerable.Repeat("⭐", value)) : "Not rated")}",
                 Style = Style,
                 Buttons = new List<Button>()
             };
-            
-            // Add rating buttons
+
             for (int i = 1; i <= 5; i++)
             {
-                message.Buttons.Add(new Button 
-                { 
-                    Text = i.ToString(), 
-                    CallbackData = $"{CallbackDataPrefix}:{i}" 
+                message.Buttons.Add(new Button
+                {
+                    Text = i.ToString(),
+                    CallbackData = $"{CallbackDataPrefix}:{i}"
                 });
             }
-            
+
             message.ButtonsPerRow = 5;
             return message;
         }
