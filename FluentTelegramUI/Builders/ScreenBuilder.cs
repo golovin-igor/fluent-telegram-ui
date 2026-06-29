@@ -24,7 +24,6 @@ namespace FluentTelegramUI.Builders
         {
             _bot = bot;
             _screen = new Screen { Title = title };
-            _bot.RegisterScreen(_screen);
         }
         
         /// <summary>
@@ -252,10 +251,6 @@ namespace FluentTelegramUI.Builders
         public ScreenBuilder AsMainScreen(bool isMain = true)
         {
             _screen.IsMainScreen = isMain;
-            if (isMain)
-            {
-                _bot.SetMainScreen(_screen);
-            }
             return this;
         }
         
@@ -507,6 +502,12 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen</returns>
         public Screen Build()
         {
+            _bot.RegisterScreen(_screen);
+            if (_screen.IsMainScreen)
+            {
+                _bot.SetMainScreen(_screen);
+            }
+
             return _screen;
         }
     }

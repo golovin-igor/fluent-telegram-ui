@@ -85,7 +85,10 @@ public class TelegramBotBuilderIntegrationTests
             }
         }, CancellationToken.None);
 
-        sendCount.Should().BeGreaterThanOrEqualTo(2);
+        sendCount.Should().BeGreaterThanOrEqualTo(1);
+        botClientMock.Verify(m => m.SendRequest(
+            It.IsAny<IRequest<Telegram.Bot.Types.Message>>(),
+            It.IsAny<CancellationToken>()), Times.AtLeast(2));
         botClientMock.Verify(m => m.SendRequest(
             It.IsAny<IRequest<bool>>(),
             It.IsAny<CancellationToken>()), Times.AtLeastOnce);
