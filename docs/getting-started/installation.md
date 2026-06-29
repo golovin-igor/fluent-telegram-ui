@@ -55,7 +55,7 @@ You can also download the source code and build it yourself:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ORIGINAL-OWNER/fluent-telegram-ui.git
+   git clone https://github.com/golovin-igor/fluent-telegram-ui.git
    ```
 
 2. Build the project:

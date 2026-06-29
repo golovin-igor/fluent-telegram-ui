@@ -18,253 +18,118 @@ nav_order: 2
 {:toc}
 </details>
 
-This guide will help you create a simple Telegram bot using FluentTelegramUI. By the end, you'll have a functional bot with interactive buttons and basic navigation.
+This guide walks through a minimal bot using `TelegramBotBuilder` and `ScreenBuilder` on **.NET 10** with **Telegram.Bot 22**.
 
-## Creating a New Project
-
-First, create a new console application:
+## Create a project
 
 ```bash
 dotnet new console -n MyTelegramBot
 cd MyTelegramBot
-```
-
-Then, install the FluentTelegramUI package:
-
-```bash
 dotnet add package FluentTelegramUI
 ```
 
-## Setting Up the Bot
+## Minimal bot
 
-Create a new file called `Program.cs` with the following content:
+Replace `Program.cs` with:
 
 ```csharp
-using System;
 using FluentTelegramUI;
+using FluentTelegramUI.Builders;
 using FluentTelegramUI.Models;
-using FluentTelegramUI.Handlers;
 
-namespace MyTelegramBot
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            // Replace with your bot token from BotFather
-            string botToken = "YOUR_BOT_TOKEN";
-            
-            // Create a bot with fluent configuration
-            var bot = new TelegramBotBuilder()
-                .WithToken(botToken)
-                .WithFluentUI()
-                .WithAutoStartReceiving()
-                .Build();
-                
-            // Create a main screen
-            var mainScreen = new Screen
-            {
-                Title = "Main Menu",
-                Content = new Message
-                {
-                    Text = "Welcome to my bot! Please select an option:",
-                    ParseMarkdown = true,
-                    ButtonsPerRow = 2
-                }
-            };
-            
-            // Add buttons to the main screen
-            mainScreen.Content.Buttons.Add(new Button 
-            { 
-                Text = "📝 About", 
-                CallbackData = "about" 
-            });
-            
-            mainScreen.Content.Buttons.Add(new Button 
-            { 
-                Text = "ℹ️ Help", 
-                CallbackData = "help" 
-            });
-            
-            // Register the main screen
-            bot.RegisterScreen(mainScreen, true);
-            
-            // Add callbacks for the buttons
-            mainScreen.OnCallback("about", async (data, context) => 
-            {
-                long chatId = (long)context["chatId"];
-                string firstName = (string)context["firstName"];
-                
-                var message = new Message
-                {
-                    Text = $"*About This Bot*\n\nHello {firstName}! This is a sample bot created with FluentTelegramUI.",
-                    ParseMarkdown = true
-                };
-                
-                await bot.SendMessageAsync(chatId, message);
-                return true;
-            });
-            
-            mainScreen.OnCallback("help", async (data, context) => 
-            {
-                long chatId = (long)context["chatId"];
-                
-                var message = new Message
-                {
-                    Text = "*Help*\n\nThis bot demonstrates the basic features of FluentTelegramUI. " +
-                           "You can navigate through screens and interact with buttons.",
-                    ParseMarkdown = true
-                };
-                
-                await bot.SendMessageAsync(chatId, message);
-                return true;
-            });
-            
-            // Keep the application running
-            Console.WriteLine("Bot started! Press Enter to exit.");
-            Console.ReadLine();
-            
-            // Stop the bot when done
-            bot.StopReceiving();
-        }
-    }
-}
+var token = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN")
+    ?? "YOUR_BOT_TOKEN";
+
+var bot = new TelegramBotBuilder()
+    .WithToken(token)
+    .WithFluentUI(FluentStyle.Modern)
+    .AddScreen("Main Menu", screen => screen
+        .WithId("main")
+        .WithContent("Welcome! Choose an option:")
+        .AddNavigationButton("About", "about")
+        .AddNavigationButton("Help", "help"), isMainScreen: true)
+    .AddScreen("About", screen => screen
+        .WithId("about")
+        .WithContent("Built with FluentTelegramUI.")
+        .AddNavigationButton("Back", "main"))
+    .AddScreen("Help", screen => screen
+        .WithId("help")
+        .WithContent("Send /start to return to the menu.")
+        .AddNavigationButton("Back", "main"))
+    .WithAutoStartReceiving()
+    .Build();
+
+Console.WriteLine("Bot running. Press Enter to stop.");
+Console.ReadLine();
+bot.StopReceiving();
 ```
 
-## Running the Bot
-
-Run the bot using the dotnet CLI:
+Run it:
 
 ```bash
+export TELEGRAM_BOT_TOKEN="your-token"
 dotnet run
 ```
 
-## Testing the Bot
+In Telegram, send `/start` to open the main menu, then use the inline buttons to navigate.
 
-1. Open Telegram and search for your bot's username
-2. Start a chat with your bot by sending the `/start` command
-3. The bot should respond with a welcome message and buttons
-4. Click the buttons to see the responses
+## Key concepts
 
-## Adding Multiple Screens
+- **`WithId("main")`** — stable screen ID used in `screen:main` navigation callbacks. Set before `Build()` registers the screen.
+- **`AddNavigationButton`** — creates a button with callback data `screen:{targetId}` handled by the screen system.
+- **`WithAutoStartReceiving()`** — starts long-polling when the bot is built.
 
-Let's enhance our bot by adding navigation between multiple screens:
+## Dependency injection variant
 
-```csharp
-// Create additional screens
-var aboutScreen = new Screen
-{
-    Title = "About",
-    Content = new Message
-    {
-        Text = "*About This Bot*\n\nThis is a sample bot created with FluentTelegramUI. " + 
-               "It demonstrates screens, buttons, and navigation.",
-        ParseMarkdown = true
-    }
-};
-
-var helpScreen = new Screen
-{
-    Title = "Help",
-    Content = new Message
-    {
-        Text = "*Help*\n\nAvailable commands:\n" +
-               "/start - Show the main menu\n\n" +
-               "Click the buttons to navigate between screens.",
-        ParseMarkdown = true
-    }
-};
-
-// Set parent relationships for back navigation
-aboutScreen.WithParent(mainScreen);
-helpScreen.WithParent(mainScreen);
-
-// Register screens
-bot.RegisterScreen(aboutScreen);
-bot.RegisterScreen(helpScreen);
-
-// Update callbacks to navigate to screens
-mainScreen.OnCallback("about", async (data, context) => 
-{
-    long chatId = (long)context["chatId"];
-    await bot.NavigateToScreenAsync(chatId, aboutScreen.Id);
-    return true;
-});
-
-mainScreen.OnCallback("help", async (data, context) => 
-{
-    long chatId = (long)context["chatId"];
-    await bot.NavigateToScreenAsync(chatId, helpScreen.Id);
-    return true;
-});
-```
-
-## Handling Text Input
-
-You can also handle text input from users:
+For ASP.NET Core or generic host apps, use `AddFluentTelegramUI()`:
 
 ```csharp
-var inputNameScreen = new Screen
-{
-    Title = "Input Your Name",
-    Content = new Message
-    {
-        Text = "Please type your name:",
-        ParseMarkdown = true
-    }
-};
+using FluentTelegramUI.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-inputNameScreen.WithParent(mainScreen);
-bot.RegisterScreen(inputNameScreen);
+var host = Host.CreateDefaultBuilder()
+    .ConfigureServices(services => services.AddFluentTelegramUI(
+        options => options.BotToken = token,
+        bot =>
+        {
+            var main = new ScreenBuilder(bot, "Main Menu")
+                .WithId("main")
+                .WithContent("Hello!")
+                .Build();
+            bot.RegisterScreen(main, isMainScreen: true);
+        }))
+    .Build();
 
-// Add a button to the main screen for the name input
-mainScreen.Content.Buttons.Add(new Button 
-{ 
-    Text = "✏️ Enter Name", 
-    CallbackData = "input_name" 
-});
-
-// Add callback to navigate to the input screen
-mainScreen.OnCallback("input_name", async (data, context) => 
-{
-    long chatId = (long)context["chatId"];
-    
-    // Set the current state to expect name input
-    bot.SetCurrentState(chatId, "awaiting_name");
-    
-    await bot.NavigateToScreenAsync(chatId, inputNameScreen.Id);
-    return true;
-});
-
-// Add a text input handler for the name
-inputNameScreen.OnTextInput("awaiting_name", async (name, context) => 
-{
-    long chatId = (long)context["chatId"];
-    
-    // Store the name in state
-    bot.SetState(chatId, "name", name);
-    
-    // Acknowledge the input
-    var message = new Message
-    {
-        Text = $"Thank you! Your name has been set to: *{name}*",
-        ParseMarkdown = true
-    };
-    
-    await bot.SendMessageAsync(chatId, message);
-    
-    // Navigate back to main screen
-    await bot.NavigateToScreenAsync(chatId, mainScreen.Id);
-    return true;
-});
+await host.RunAsync();
 ```
 
-## Next Steps
+See [`samples/HostedServiceBot`](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples/HostedServiceBot) and [`samples/WebhookBot`](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples/WebhookBot).
 
-Congratulations! You now have a working Telegram bot with interactive buttons, multiple screens, and text input handling. To learn more about the library's features:
+## Interactive controls
 
-- Explore the [Core Components](../components/screens.md) documentation
-- Check out the [Examples](../examples/basic-bot.md) for more complex scenarios
-- Learn about [State Management](../advanced/state-management.md) for handling conversations
+Add toggles, carousels, ratings, and more with `ScreenBuilder` extension methods:
 
-Remember to replace `YOUR_BOT_TOKEN` with your actual bot token from BotFather! 
+```csharp
+.AddToggle("Dark mode", "dark_mode", false)
+.AddRating("Rate us", "rating", 0)
+```
+
+See [Advanced UI Components](../components/advanced-components.md) and the [`AdvancedComponentsBot`](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples/AdvancedComponentsBot) sample.
+
+## Localization
+
+Localize titles and content with resource keys:
+
+```csharp
+.WithLocalizedTitle("WelcomeMessage")
+.WithLocalizedContent("SettingsMessage")
+.OnSetCulture("lang:de", "de")
+```
+
+See [Localization](../advanced/localization.md).
+
+## Next steps
+
+- [Installation](installation.md) — prerequisites and NuGet setup
+- [Samples](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples) — runnable reference bots
+- [Migrating from Telegram.Bot](../advanced/migrating.md) — upgrade an existing bot

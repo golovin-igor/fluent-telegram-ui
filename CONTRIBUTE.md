@@ -20,7 +20,7 @@ Thank you for your interest in contributing to FluentTelegramUI! This document o
    ```
 3. Add the upstream repository as a remote:
    ```
-   git remote add upstream https://github.com/ORIGINAL-OWNER/fluent-telegram-ui.git
+   git remote add upstream https://github.com/golovin-igor/fluent-telegram-ui.git
    ```
 4. Build the project to ensure everything works:
    ```
@@ -122,7 +122,7 @@ screen.OnCallback("button_click", async (data, context) =>
 
 ## Finding an Issue to Work On
 
-If you're looking to contribute but don't have a specific feature or bug in mind, check the [Issues](https://github.com/ORIGINAL-OWNER/fluent-telegram-ui/issues) section of the repository. Issues labeled with "good first issue" are a great place to start!
+If you're looking to contribute but don't have a specific feature or bug in mind, check the [Issues](https://github.com/golovin-igor/fluent-telegram-ui/issues) section of the repository. Issues labeled with "good first issue" are a great place to start!
 
 ## Questions?
 

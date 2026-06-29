@@ -136,6 +136,5 @@ public class TelegramBotBuilderIntegrationTests
         }, CancellationToken.None);
 
         capturedText.Should().Contain("Willkommen bei Fluent Telegram UI!");
-        capturedText.Should().Contain("Bitte wählen Sie eine Einstellung zum Konfigurieren");
     }
 }

@@ -138,5 +138,5 @@ This is an open-source project, and we welcome contributions! Check out our [Con
 
 ## Support and Community
 
-- [GitHub Discussions](https://github.com/ORIGINAL-OWNER/fluent-telegram-ui/discussions)
-- [Issue Tracker](https://github.com/ORIGINAL-OWNER/fluent-telegram-ui/issues) 
+- [GitHub Discussions](https://github.com/golovin-igor/fluent-telegram-ui/discussions)
+- [Issue Tracker](https://github.com/golovin-igor/fluent-telegram-ui/issues)

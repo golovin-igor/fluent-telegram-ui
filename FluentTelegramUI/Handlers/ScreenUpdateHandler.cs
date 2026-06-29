@@ -33,14 +33,11 @@ namespace FluentTelegramUI.Handlers
         {
             _logger.LogInformation($"Received text message: {message.Text}");
             
-            if (message.Text == "/start" && message.Chat.Id != null)
+            if (message.Text == "/start")
             {
-                // Navigate to main screen for new users
-                await _screenManager.NavigateToMainScreenAsync(message.Chat.Id, cancellationToken);
-                
-                // Reset the state machine for this chat
                 _screenManager.ClearState(message.Chat.Id);
                 _screenManager.SetCurrentState(message.Chat.Id, "initial");
+                await _screenManager.NavigateToMainScreenAsync(message.Chat.Id, cancellationToken);
                 return;
             }
             
