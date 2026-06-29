@@ -18,8 +18,18 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddFluentTelegramUI(
         this IServiceCollection services,
         Action<FluentTelegramUIOptions> configure)
+        => AddFluentTelegramUI(services, configure, configureBot: null);
+
+    /// <summary>
+    /// Adds FluentTelegramUI services and runs <paramref name="configureBot"/> once at startup
+    /// (for example, to register screens on the bot instance).
+    /// </summary>
+    public static IServiceCollection AddFluentTelegramUI(
+        this IServiceCollection services,
+        Action<FluentTelegramUIOptions> configureOptions,
+        Action<FluentTelegramBot>? configureBot)
     {
-        services.Configure(configure);
+        services.Configure(configureOptions);
         services.TryAddSingleton<IStateStore, StateMachine>();
         services.TryAddSingleton<StateMachine>();
         services.AddSingleton<ITelegramBotClient>(sp =>
@@ -49,7 +59,15 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredService<ScreenManager>());
         });
         services.AddSingleton<FluentTelegramBot>();
+
+        if (configureBot != null)
+        {
+            services.AddSingleton(configureBot);
+            services.AddHostedService<FluentTelegramBotSetupHostedService>();
+        }
+
         services.AddHostedService<FluentTelegramBotHostedService>();
+
         return services;
     }
 }

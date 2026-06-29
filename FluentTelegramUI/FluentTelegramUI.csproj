@@ -6,8 +6,8 @@
     <Authors>FluentTelegramUI Contributors</Authors>
     <Description>A modern, fluent-style UI framework for creating Telegram bots using C# .NET</Description>
     <PackageTags>telegram;bot;ui;fluent;csharp;net10</PackageTags>
-    <PackageProjectUrl>https://github.com/fluent-telegram-ui/fluent-telegram-ui</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/fluent-telegram-ui/fluent-telegram-ui</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/golovin-igor/fluent-telegram-ui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/golovin-igor/fluent-telegram-ui</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>

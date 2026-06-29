@@ -15,4 +15,7 @@ public sealed class FluentTelegramUIOptions
 
     /// <summary>When true, starts long-polling automatically via hosted service.</summary>
     public bool AutoStartPolling { get; set; } = true;
+
+    /// <summary>Optional secret token for webhook validation (Telegram X-Telegram-Bot-Api-Secret-Token header).</summary>
+    public string? WebhookSecretToken { get; set; }
 }

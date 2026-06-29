@@ -2,8 +2,8 @@ remote_theme: pmarsceill/just-the-docs
 
 title: FluentTelegramUI
 description: A modern, fluent-style UI framework for creating Telegram bots using C# .NET
-baseurl: "/fluent-telegram-ui" # the subpath of your site, e.g. /blog
-url: "https://ORIGINAL-OWNER.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/fluent-telegram-ui"
+url: "https://golovin-igor.github.io"
 
 permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "package.json", "package-lock.json",  "script/", "LICENSE.txt", "lib/", "bin/", "README.md", "Rakefile"]
@@ -17,7 +17,7 @@ heading_anchors: true
 # Aux links for the upper right navigation
 aux_links:
   "FluentTelegramUI on GitHub":
-    - "//github.com/ORIGINAL-OWNER/fluent-telegram-ui"
+    - "//github.com/golovin-igor/fluent-telegram-ui"
 
 # Makes Aux links open in a new tab
 aux_links_new_tab: true
@@ -26,7 +26,7 @@ aux_links_new_tab: true
 nav_sort: case_insensitive # Capital letters sorted before lowercase
 
 # Footer content
-footer_content: "Copyright &copy; 2023 FluentTelegramUI Contributors. Distributed under the <a href=\"https://github.com/ORIGINAL-OWNER/fluent-telegram-ui/blob/main/LICENSE\">MIT license.</a>"
+footer_content: "Copyright &copy; 2023 FluentTelegramUI Contributors. Distributed under the <a href=\"https://github.com/golovin-igor/fluent-telegram-ui/blob/main/LICENSE\">MIT license.</a>"
 
 # Back to top link
 back_to_top: true

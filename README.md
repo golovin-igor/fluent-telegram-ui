@@ -68,6 +68,38 @@ await bot.SendMessageAsync(123456789, message);
 bot.StartReceiving();
 ```
 
+### Dependency injection and hosting
+
+```csharp
+using FluentTelegramUI.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var host = Host.CreateDefaultBuilder()
+    .ConfigureServices(services => services.AddFluentTelegramUI(
+        options => options.BotToken = "YOUR_BOT_TOKEN",
+        bot => bot.RegisterScreen(/* ... */, isMainScreen: true)))
+    .Build();
+
+await host.RunAsync(); // starts long-polling via IHostedService
+```
+
+For ASP.NET Core webhooks, see [samples/WebhookBot](samples/WebhookBot/).
+
+## Samples
+
+Runnable examples live under [samples/](samples/):
+
+| Project | Pattern |
+|---------|---------|
+| `SimpleScreenBot` | `TelegramBotBuilder` + manual polling |
+| `HostedServiceBot` | `AddFluentTelegramUI()` + generic host |
+| `WebhookBot` | ASP.NET Core webhook endpoint |
+
+```bash
+export TELEGRAM_BOT_TOKEN="your-token"
+dotnet run --project samples/HostedServiceBot
+```
+
 ## Screen System
 
 The Screen system allows you to create interactive UI screens with navigation and callbacks:
