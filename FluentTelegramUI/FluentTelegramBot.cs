@@ -58,11 +58,9 @@ namespace FluentTelegramUI
             _botClient = _serviceProvider.GetRequiredService<ITelegramBotClient>();
             _logger = _serviceProvider.GetService<ILogger<FluentTelegramBot>>() ?? 
                       CreateDefaultLogger();
-            _defaultStyle = _serviceProvider.GetService<FluentStyle>();
-            if (_defaultStyle == null)
-            {
-                _defaultStyle = FluentStyle.Default;
-            }
+            _defaultStyle = _serviceProvider.GetService(typeof(FluentStyle)) is FluentStyle registeredStyle
+                ? registeredStyle
+                : FluentStyle.Default;
             
             // Create the screen manager
             var screenManagerLogger = _serviceProvider.GetService<ILogger<ScreenManager>>() ?? 
