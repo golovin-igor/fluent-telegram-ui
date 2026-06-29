@@ -14,6 +14,8 @@
 - Add `WebhookSecretToken` option for webhook validation
 - Source Link symbol packages, GitHub Pages docs workflow, NuGet release workflow
 - CI collects code coverage and builds all samples
+- Localize screen titles and content via resource keys and per-chat culture
+- Migrate legacy Examples into runnable samples; add integration tests for Build()
 
 ## 0.1.0
 

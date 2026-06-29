@@ -1,6 +1,7 @@
 using FluentTelegramUI.Handlers;
 using FluentTelegramUI.Hosting;
 using FluentTelegramUI.Models;
+using FluentTelegramUI.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Telegram.Bot;
@@ -42,6 +43,15 @@ public static class ServiceCollectionExtensions
 
             return new TelegramBotClient(options.BotToken);
         });
+        services.AddSingleton<LocalizationService>(sp =>
+        {
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<FluentTelegramUIOptions>>().Value;
+            var stateStore = sp.GetRequiredService<IStateStore>();
+            var localization = new LocalizationService { DefaultCulture = options.DefaultCulture };
+            localization.BindStateStore(stateStore);
+            return localization;
+        });
+        services.AddSingleton<ILocalizationService>(sp => sp.GetRequiredService<LocalizationService>());
         services.AddSingleton<ScreenManager>(sp =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<FluentTelegramUIOptions>>().Value;
@@ -49,7 +59,8 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredService<ITelegramBotClient>(),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ScreenManager>>(),
                 sp.GetRequiredService<StateMachine>(),
-                options.DefaultStyle);
+                options.DefaultStyle,
+                sp.GetRequiredService<ILocalizationService>());
         });
         services.AddSingleton<IFluentUpdateHandler>(sp =>
         {

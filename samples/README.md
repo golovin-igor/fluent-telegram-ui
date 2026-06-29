@@ -7,6 +7,8 @@ Runnable examples for FluentTelegramUI v0.2+ (.NET 10, Telegram.Bot 22).
 | [SimpleScreenBot](SimpleScreenBot/) | Minimal bot using `TelegramBotBuilder` and long-polling |
 | [HostedServiceBot](HostedServiceBot/) | Generic host with `AddFluentTelegramUI()` and automatic polling |
 | [WebhookBot](WebhookBot/) | ASP.NET Core webhook endpoint with optional secret-token validation |
+| [AdvancedComponentsBot](AdvancedComponentsBot/) | Demo of toggles, carousel, progress, accordion, rich text, and rating |
+| [LocalizedScreenBot](LocalizedScreenBot/) | Per-chat localization with resource keys and culture switching |
 
 ## Prerequisites
 
@@ -26,6 +28,12 @@ dotnet run --project samples/SimpleScreenBot
 # HostedServiceBot (DI + IHostedService)
 dotnet run --project samples/HostedServiceBot
 
+# Advanced UI components demo
+dotnet run --project samples/AdvancedComponentsBot
+
+# Localized screens (English / Deutsch)
+dotnet run --project samples/LocalizedScreenBot
+
 # WebhookBot (ASP.NET Core)
 dotnet run --project samples/WebhookBot
 ```
@@ -42,4 +50,4 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
 ```
 
-Legacy reference examples (not compiled into the NuGet package) remain under `FluentTelegramUI/Examples/` for documentation purposes.
+Legacy reference material lives under `FluentTelegramUI/Examples/README.md` (source files were migrated into `samples/`).

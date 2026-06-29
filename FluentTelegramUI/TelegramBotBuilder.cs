@@ -21,6 +21,17 @@ namespace FluentTelegramUI
         private bool _autoStartReceiving = false;
         private List<(string Title, Action<ScreenBuilder> Configure, bool IsMainScreen)> _screenBuilders = new();
         private string? _mainScreenId = null;
+        private ITelegramBotClient? _botClientOverride;
+        
+        /// <summary>
+        /// Uses a pre-configured bot client instead of creating one from the token.
+        /// Useful for testing or custom client configuration.
+        /// </summary>
+        public TelegramBotBuilder WithBotClient(ITelegramBotClient botClient)
+        {
+            _botClientOverride = botClient;
+            return this;
+        }
         
         /// <summary>
         /// Sets the Telegram bot token
@@ -107,7 +118,7 @@ namespace FluentTelegramUI
             }
             
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ITelegramBotClient>(new TelegramBotClient(_token));
+            serviceCollection.AddSingleton<ITelegramBotClient>(_botClientOverride ?? new TelegramBotClient(_token));
             serviceCollection.Configure<FluentTelegramUIOptions>(options =>
             {
                 options.BotToken = _token;
@@ -118,11 +129,16 @@ namespace FluentTelegramUI
             var stateMachine = new StateMachine();
             serviceCollection.AddSingleton(stateMachine);
             serviceCollection.AddSingleton<IStateStore>(stateMachine);
+            var localization = LocalizationServiceRegistration.AddFluentTelegramUILocalization(
+                serviceCollection,
+                stateMachine,
+                defaultCulture: "en");
             serviceCollection.AddSingleton(sp => new ScreenManager(
                 sp.GetRequiredService<ITelegramBotClient>(),
                 sp.GetRequiredService<ILogger<ScreenManager>>(),
                 stateMachine,
-                _defaultStyle));
+                _defaultStyle,
+                localization));
 
             if (_updateHandler != null)
             {

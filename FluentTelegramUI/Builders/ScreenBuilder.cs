@@ -1,3 +1,4 @@
+using FluentTelegramUI.Resources;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -50,6 +51,34 @@ namespace FluentTelegramUI.Builders
         public ScreenBuilder WithContent(Message message)
         {
             _screen.Content = message;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets a stable screen identifier used for navigation callbacks.
+        /// </summary>
+        public ScreenBuilder WithId(string id)
+        {
+            _screen.Id = id;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the screen title from a localization resource key.
+        /// </summary>
+        public ScreenBuilder WithLocalizedTitle(string resourceKey)
+        {
+            _screen.TitleResourceKey = resourceKey;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the screen body from a localization resource key.
+        /// </summary>
+        public ScreenBuilder WithLocalizedContent(string resourceKey, bool parseMarkdown = true)
+        {
+            _screen.ContentResourceKey = resourceKey;
+            _screen.Content.ParseMarkdown = parseMarkdown;
             return this;
         }
         
@@ -130,6 +159,25 @@ namespace FluentTelegramUI.Builders
         public ScreenBuilder OnCallback(string callbackData, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
             _screen.OnCallback(callbackData, handler);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the chat culture when a callback is received and refreshes the screen.
+        /// </summary>
+        public ScreenBuilder OnSetCulture(string callbackData, string cultureName)
+        {
+            _screen.OnCallback(callbackData, async (_, state) =>
+            {
+                if (!TryGetChatId(state, out var chatId))
+                {
+                    return true;
+                }
+
+                _bot.StateMachine.SetState(chatId, LocalizationKeys.Culture, cultureName);
+                await _bot.RefreshCurrentScreenAsync(chatId);
+                return true;
+            });
             return this;
         }
         

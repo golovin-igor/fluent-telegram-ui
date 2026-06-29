@@ -18,4 +18,7 @@ public sealed class FluentTelegramUIOptions
 
     /// <summary>Optional secret token for webhook validation (Telegram X-Telegram-Bot-Api-Secret-Token header).</summary>
     public string? WebhookSecretToken { get; set; }
+
+    /// <summary>Default culture for chats without a stored preference.</summary>
+    public string DefaultCulture { get; set; } = "en";
 }
