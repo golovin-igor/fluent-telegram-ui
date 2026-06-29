@@ -35,18 +35,17 @@ jobs:
         run: dotnet pack FluentTelegramUI/FluentTelegramUI.csproj --no-build -c Release -o ./artifacts
 
       - name: Push to NuGet
-        if: ${{ secrets.NUGET_API_KEY != '' }}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::warning::NUGET_API_KEY secret is not set — packages were built but not published to nuget.org"
+            exit 0
+          fi
           dotnet nuget push ./artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
           if compgen -G "./artifacts/*.snupkg" > /dev/null; then
             dotnet nuget push ./artifacts/*.snupkg --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
           fi
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-
-      - name: NuGet push skipped
-        if: ${{ secrets.NUGET_API_KEY == '' }}
-        run: echo "::warning::NUGET_API_KEY secret is not set — packages were built but not published to nuget.org"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
