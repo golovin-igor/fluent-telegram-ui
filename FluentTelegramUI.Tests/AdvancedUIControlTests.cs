@@ -280,7 +280,7 @@ namespace FluentTelegramUI.Tests
             
             // Assert
             message.Should().NotBeNull();
-            message.Text.Should().Be("*FAQ*\n\n1. How do I use this?\n2. What is this for?");
+            message.Text.Should().Be("<b>FAQ</b>\n\n1. How do I use this?\n2. What is this for?");
             message.ParseMarkdown.Should().BeTrue();
             message.Buttons.Should().ContainSingle();
             message.Buttons[0].Text.Should().Be("▼ Collapse");
@@ -291,7 +291,7 @@ namespace FluentTelegramUI.Tests
             message = accordion.ToMessage();
             
             // Assert
-            message.Text.Should().Be("*FAQ*");
+            message.Text.Should().Be("<b>FAQ</b>");
             message.Buttons[0].Text.Should().Be("▶ Expand");
             message.Buttons[0].CallbackData.Should().Be($"accordion:{accordion.Id}:expand");
         }

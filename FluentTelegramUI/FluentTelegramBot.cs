@@ -2,6 +2,7 @@ using System.Threading;
 using FluentTelegramUI.Models;
 using FluentTelegramUI.DependencyInjection;
 using FluentTelegramUI.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;

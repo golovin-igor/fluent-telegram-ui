@@ -342,7 +342,7 @@ var fluentBot = new TelegramBotBuilder()
     .Build();
 
 // Keep a reference to the Telegram.Bot client for legacy code
-var botClient = fluentBot.GetRequiredService<ITelegramBotClient>();
+var botClient = new TelegramBotClient("YOUR_BOT_TOKEN");
 
 // Set a custom update handler for non-migrated parts
 fluentBot.SetCustomUpdateHandler(async (update, cancellationToken) => {

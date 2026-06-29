@@ -18,7 +18,7 @@ namespace FluentTelegramUI.Tests
             type.Should().BeAbstract();
             type.GetProperty("Id").Should().NotBeNull();
             type.GetProperty("Style").Should().NotBeNull();
-            type.GetMethod("ToMessage").Should().NotBeNull();
+            type.GetMethod("ToMessage", Type.EmptyTypes).Should().NotBeNull();
         }
         
         [Fact]
