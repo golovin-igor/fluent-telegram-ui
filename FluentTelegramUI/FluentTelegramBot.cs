@@ -101,7 +101,7 @@ namespace FluentTelegramUI
             
             var parseMode = message.ParseMarkdown ? ParseMode.MarkdownV2 : ParseMode.Html;
             
-            return await _botClient.SendTextMessageAsync(
+            return await _botClient.SendMessage(
                 chatId: chatId,
                 text: message.Text,
                 parseMode: parseMode,

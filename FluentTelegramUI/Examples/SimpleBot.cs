@@ -78,7 +78,7 @@ namespace FluentTelegramUI.Examples
             }
             
             // Answer the callback query
-            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+            await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
         }
         
         /// <summary>

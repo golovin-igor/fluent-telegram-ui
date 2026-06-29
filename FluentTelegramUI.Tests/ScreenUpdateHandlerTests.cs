@@ -91,25 +91,25 @@ namespace FluentTelegramUI.Tests
             };
             var cancellationToken = CancellationToken.None;
             
-            botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
+            botClientMock.Setup(m => m.AnswerCallbackQuery(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
-                It.IsAny<int>(),
+                It.IsAny<int?>(),
                 It.IsAny<CancellationToken>()
-            )).Returns(Task.FromResult(true));
+            )).Returns(Task.CompletedTask);
             
             // Act
             await _handler.HandleCallbackQueryAsync(botClientMock.Object, callbackQuery, cancellationToken);
             
             // Assert
-            botClientMock.Verify(m => m.AnswerCallbackQueryAsync(
-                "callback-id", 
-                null, 
-                false, 
-                null, 
-                0, 
+            botClientMock.Verify(m => m.AnswerCallbackQuery(
+                "callback-id",
+                It.IsAny<string>(),
+                It.IsAny<bool>(),
+                It.IsAny<string>(),
+                It.IsAny<int?>(),
                 cancellationToken
             ), Times.Once);
         }

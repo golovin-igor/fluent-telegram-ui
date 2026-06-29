@@ -50,7 +50,7 @@ namespace FluentTelegramUI.Handlers
         private async Task HandleStartCommand(Message message)
         {
             string welcomeMessage = _localization.GetString("WelcomeMessage");
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: welcomeMessage
             );
@@ -65,7 +65,7 @@ namespace FluentTelegramUI.Handlers
             helpText.AppendLine($"/settings - {_localization.GetString("SettingsCommand")}");
             helpText.AppendLine($"/language - {_localization.GetString("LanguageCommand")}");
 
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: helpText.ToString()
             );
@@ -82,7 +82,7 @@ namespace FluentTelegramUI.Handlers
                 ResizeKeyboard = true
             };
 
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: _localization.GetString("SettingsMessage"),
                 replyMarkup: settingsKeyboard
@@ -100,7 +100,7 @@ namespace FluentTelegramUI.Handlers
                 }
             });
 
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: _localization.GetString("SelectLanguage"),
                 replyMarkup: languageKeyboard
@@ -109,7 +109,7 @@ namespace FluentTelegramUI.Handlers
 
         private async Task HandleInvalidCommand(Message message)
         {
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: message.Chat.Id,
                 text: _localization.GetString("InvalidCommand")
             );

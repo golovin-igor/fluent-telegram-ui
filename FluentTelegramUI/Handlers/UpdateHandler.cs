@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace FluentTelegramUI.Handlers
 {
@@ -45,10 +44,11 @@ namespace FluentTelegramUI.Handlers
         /// </summary>
         /// <param name="botClient">The bot client</param>
         /// <param name="exception">The exception that occurred</param>
+        /// <param name="source">The source of the error</param>
         /// <param name="cancellationToken">The cancellation token</param>
-        public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
         {
             await _errorHandler(botClient, exception, cancellationToken);
         }
     }
-} 
+}

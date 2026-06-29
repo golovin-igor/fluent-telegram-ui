@@ -189,7 +189,7 @@ namespace FluentTelegramUI.Models
             {
                 var targetScreenId = callbackQuery.Data.Substring(7);
                 await NavigateToScreenAsync(chatId.Value, targetScreenId, cancellationToken);
-                await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+                await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
                 return;
             }
             
@@ -197,7 +197,7 @@ namespace FluentTelegramUI.Models
             if (callbackQuery.Data == "back" && currentScreen.ParentScreen != null)
             {
                 await NavigateToScreenAsync(chatId.Value, currentScreen.ParentScreen.Id, cancellationToken);
-                await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+                await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
                 return;
             }
             
@@ -227,7 +227,7 @@ namespace FluentTelegramUI.Models
                 }
             }
             
-            await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+            await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
             
             // Refresh the screen if needed
             if (handled)
@@ -271,7 +271,7 @@ namespace FluentTelegramUI.Models
             };
             
             // Send the message
-            return await _botClient.SendTextMessageAsync(
+            return await _botClient.SendMessage(
                 chatId: chatId,
                 text: renderMessage.Text,
                 parseMode: renderMessage.ParseMarkdown ? Telegram.Bot.Types.Enums.ParseMode.MarkdownV2 : Telegram.Bot.Types.Enums.ParseMode.Html,

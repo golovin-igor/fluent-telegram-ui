@@ -103,7 +103,7 @@ namespace FluentTelegramUI.Tests
             _screenManager.RegisterScreen(mainScreen, true);
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -132,7 +132,7 @@ namespace FluentTelegramUI.Tests
             _screenManager.RegisterScreen(screen);
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -160,7 +160,7 @@ namespace FluentTelegramUI.Tests
             var nonExistentScreenId = "non-existent-id";
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -202,7 +202,7 @@ namespace FluentTelegramUI.Tests
             };
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -217,7 +217,7 @@ namespace FluentTelegramUI.Tests
             .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
-            _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
+            _botClientMock.Setup(m => m.AnswerCallbackQuery(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<bool?>(), 
@@ -259,7 +259,7 @@ namespace FluentTelegramUI.Tests
             };
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -274,7 +274,7 @@ namespace FluentTelegramUI.Tests
             .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
-            _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
+            _botClientMock.Setup(m => m.AnswerCallbackQuery(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<bool?>(), 
@@ -323,7 +323,7 @@ namespace FluentTelegramUI.Tests
             };
             
             var messageCount = 0;
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode?>(), 
@@ -338,7 +338,7 @@ namespace FluentTelegramUI.Tests
             .ReturnsAsync(new Telegram.Bot.Types.Message());
             
             var callbackAnswerCount = 0;
-            _botClientMock.Setup(m => m.AnswerCallbackQueryAsync(
+            _botClientMock.Setup(m => m.AnswerCallbackQuery(
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<bool?>(), 
@@ -404,8 +404,8 @@ namespace FluentTelegramUI.Tests
                 }
             };
             
-            // Mock SendTextMessageAsync method with proper return type
-            _botClientMock.Setup(m => m.SendTextMessageAsync(
+            // Mock SendMessage method with proper return type
+            _botClientMock.Setup(m => m.SendMessage(
                 It.IsAny<ChatId>(), 
                 It.IsAny<string>(), 
                 It.IsAny<ParseMode?>(), 

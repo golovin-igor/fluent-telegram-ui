@@ -88,7 +88,7 @@ namespace FluentTelegramUI.Handlers
             _logger.LogInformation($"Received callback query: {callbackQuery.Data}");
             
             // The ScreenManager already handles the callback, just answer it
-            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+            await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
         }
         
         /// <inheritdoc/>

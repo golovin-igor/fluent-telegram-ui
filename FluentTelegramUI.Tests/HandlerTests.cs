@@ -97,7 +97,7 @@ namespace FluentTelegramUI.Tests
         }
         
         [Fact]
-        public async Task UpdateHandler_HandlePollingErrorAsync_CallsErrorHandler()
+        public async Task UpdateHandler_HandleErrorAsync_CallsErrorHandler()
         {
             // Arrange
             var updateHandlerCalled = false;
@@ -121,7 +121,7 @@ namespace FluentTelegramUI.Tests
             var cancellationToken = CancellationToken.None;
             
             // Act
-            await handler.HandlePollingErrorAsync(botClientMock.Object, exception, cancellationToken);
+            await handler.HandleErrorAsync(botClientMock.Object, exception, HandleErrorSource.PollingError, cancellationToken);
             
             // Assert
             updateHandlerCalled.Should().BeFalse();

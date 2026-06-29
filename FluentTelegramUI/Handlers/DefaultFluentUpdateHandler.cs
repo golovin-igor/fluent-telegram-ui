@@ -34,7 +34,7 @@ namespace FluentTelegramUI.Handlers
         public virtual Task HandleCallbackQueryAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Received callback query: {callbackQuery.Data}");
-            return botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+            return botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
         }
         
         /// <inheritdoc/>

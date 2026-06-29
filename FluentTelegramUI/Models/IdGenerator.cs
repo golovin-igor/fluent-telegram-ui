@@ -1,5 +1,4 @@
 using shortid;
-using shortid.Configuration;
 
 namespace FluentTelegramUI.Models
 {
