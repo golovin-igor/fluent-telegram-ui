@@ -16,6 +16,8 @@
 - CI collects code coverage and builds all samples
 - Localize screen titles and content via resource keys and per-chat culture
 - Migrate legacy Examples into runnable samples; add integration tests for Build()
+- Fix `/start` handler to reset state before navigating; fix `ScreenBuilder.WithId()` registration
+- Update docs (quick start, localization guide, GitHub URLs); upload CI coverage artifacts
 
 ## 0.1.0
 

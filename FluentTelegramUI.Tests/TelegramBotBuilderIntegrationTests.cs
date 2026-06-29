@@ -120,11 +120,8 @@ public class TelegramBotBuilderIntegrationTests
             .AddScreen("Home", builder => builder
                 .WithId("home")
                 .WithLocalizedTitle("WelcomeMessage")
-                .WithLocalizedContent("SettingsMessage")
-                .OnSetCulture("lang:de", "de"), isMainScreen: true)
+                .WithLocalizedContent("SettingsMessage"), isMainScreen: true)
             .Build();
-
-        bot.StateMachine.SetState(99, LocalizationKeys.Culture, "de");
 
         await bot.ProcessUpdateAsync(botClientMock.Object, new Update
         {
@@ -135,6 +132,10 @@ public class TelegramBotBuilderIntegrationTests
             }
         }, CancellationToken.None);
 
+        bot.StateMachine.SetState(99, LocalizationKeys.Culture, "de");
+        await bot.RefreshCurrentScreenAsync(99, CancellationToken.None);
+
         capturedText.Should().Contain("Willkommen bei Fluent Telegram UI!");
+        capturedText.Should().Contain("Bitte wählen Sie eine Einstellung zum Konfigurieren");
     }
 }
