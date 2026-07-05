@@ -203,7 +203,7 @@ namespace FluentTelegramUI.Builders
             var button = new Button
             {
                 Text = text,
-                CallbackData = $"screen:{targetScreenId}"
+                CallbackData = CallbackPrefixes.Screen + targetScreenId
             };
             
             _screen.Content.Buttons.Add(button);
@@ -371,7 +371,7 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithCarouselHandler(string carouselId)
         {
-            _screen.OnCallback($"carousel:{carouselId}:prev", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Previous}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
@@ -392,7 +392,7 @@ namespace FluentTelegramUI.Builders
                 return true;
             });
 
-            _screen.OnCallback($"carousel:{carouselId}:next", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Next}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
@@ -423,7 +423,7 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithToggleHandler(string toggleId)
         {
-            _screen.OnCallback($"{toggleId}:on", async (data, state) =>
+            _screen.OnCallback($"{toggleId}:{ToggleActions.On}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
@@ -435,7 +435,7 @@ namespace FluentTelegramUI.Builders
                 return true;
             });
 
-            _screen.OnCallback($"{toggleId}:off", async (data, state) =>
+            _screen.OnCallback($"{toggleId}:{ToggleActions.Off}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
@@ -457,7 +457,7 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithAccordionHandler(string accordionId)
         {
-            _screen.OnCallback($"accordion:{accordionId}:expand", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Expand}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
@@ -469,7 +469,7 @@ namespace FluentTelegramUI.Builders
                 return true;
             });
 
-            _screen.OnCallback($"accordion:{accordionId}:collapse", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Collapse}", async (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {

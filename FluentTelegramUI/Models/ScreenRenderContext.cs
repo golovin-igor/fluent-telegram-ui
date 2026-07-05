@@ -40,5 +40,5 @@ public sealed class ScreenRenderContext
     /// Builds a stable storage key for control state.
     /// </summary>
     public static string ControlStateKey(string screenId, string controlId, string property)
-        => $"ctrl:{screenId}:{controlId}:{property}";
+        => $"{StateKeys.ControlPrefix}{screenId}:{controlId}:{property}";
 }

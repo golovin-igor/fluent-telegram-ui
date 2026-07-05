@@ -90,7 +90,7 @@ namespace FluentTelegramUI.Models
         /// <returns>The screen instance for method chaining</returns>
         public Screen OnTextInput(string stateName, Func<string, Dictionary<string, object>, Task<bool>> handler)
         {
-            EventHandlers[$"text_input:{stateName}"] = handler;
+            EventHandlers[CallbackPrefixes.TextInput + stateName] = handler;
             return this;
         }
         

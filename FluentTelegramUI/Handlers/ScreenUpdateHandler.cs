@@ -31,26 +31,28 @@ namespace FluentTelegramUI.Handlers
         /// <inheritdoc/>
         public virtual async Task HandleTextMessageAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Message message, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Received text message: {message.Text}");
-            
+            _logger.LogInformation("Received text message: {Text}", message.Text);
+
             if (message.Text == "/start")
             {
-                _screenManager.ClearState(message.Chat.Id);
+                // Full reset before navigating: clears state, current screen, and
+                // navigation state (including the stale last message id).
+                _screenManager.ResetChat(message.Chat.Id);
                 _screenManager.SetCurrentState(message.Chat.Id, "initial");
                 await _screenManager.NavigateToMainScreenAsync(message.Chat.Id, cancellationToken);
                 return;
             }
-            
+
             // Get current conversation state
             var currentState = _screenManager.GetCurrentState(message.Chat.Id);
             var currentScreen = _screenManager.StateMachine.GetCurrentScreen(message.Chat.Id);
-            
+
             // Handle text input based on the current state
-            if (!string.IsNullOrEmpty(currentState) && !string.IsNullOrEmpty(currentScreen) && 
-                _screenManager.GetScreenById(currentScreen, out var screen))
+            if (!string.IsNullOrEmpty(currentState) && !string.IsNullOrEmpty(currentScreen) &&
+                _screenManager.GetScreenById(currentScreen, out var screen) && screen != null)
             {
                 // Check if the screen has a text input handler for the current state
-                var handlerKey = $"text_input:{currentState}";
+                var handlerKey = CallbackPrefixes.TextInput + currentState;
                 if (screen.EventHandlers.TryGetValue(handlerKey, out var handler))
                 {
                     // Create context dictionary with useful information
@@ -64,15 +66,21 @@ namespace FluentTelegramUI.Handlers
                         { "messageId", message.MessageId },
                         { "message", message }
                     };
-                    
+
                     // Store the input text in state
-                    _screenManager.SetState(message.Chat.Id, "last_input", message.Text);
-                    
-                    // Call the handler with the text and context
-                    bool result = await handler(message.Text, context);
-                    if (result)
+                    _screenManager.SetState(message.Chat.Id, StateKeys.LastInput, message.Text);
+
+                    try
                     {
-                        await _screenManager.RefreshCurrentScreenAsync(message.Chat.Id, cancellationToken);
+                        bool result = await handler(message.Text, context);
+                        if (result)
+                        {
+                            await _screenManager.RefreshCurrentScreenAsync(message.Chat.Id, cancellationToken);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in text input handler: {Message}", ex.Message);
                     }
                 }
             }

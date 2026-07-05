@@ -2,6 +2,7 @@ using System.Threading;
 using FluentTelegramUI.Models;
 using FluentTelegramUI.DependencyInjection;
 using FluentTelegramUI.Handlers;
+using FluentTelegramUI.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
@@ -63,10 +64,22 @@ namespace FluentTelegramUI
             _defaultStyle = _serviceProvider.GetService<IOptions<FluentTelegramUIOptions>>()?.Value.DefaultStyle
                 ?? FluentStyle.Default;
             
-            var screenManagerLogger = _serviceProvider.GetService<ILogger<ScreenManager>>() ?? 
+            var screenManagerLogger = _serviceProvider.GetService<ILogger<ScreenManager>>() ??
                                      new Logger<ScreenManager>(LogLevel.Information, typeof(ScreenManager).Name);
-            _screenManager = _serviceProvider.GetService<ScreenManager>()
-                ?? new ScreenManager(_botClient, screenManagerLogger, new StateMachine(), _defaultStyle);
+            var screenManager = _serviceProvider.GetService<ScreenManager>();
+            if (screenManager != null)
+            {
+                _screenManager = screenManager;
+            }
+            else
+            {
+                // Reuse a shared StateMachine when registered so control/state and
+                // any IStateStore consumers stay in sync. Only create a new one as a
+                // last resort to avoid a second, unshared StateMachine.
+                var stateMachine = _serviceProvider.GetService<StateMachine>() ?? new StateMachine();
+                var localization = _serviceProvider.GetService<ILocalizationService>();
+                _screenManager = new ScreenManager(_botClient, screenManagerLogger, stateMachine, _defaultStyle, localization);
+            }
             
             _updateHandler = _serviceProvider.GetService<IFluentUpdateHandler>();
             if (_updateHandler == null)

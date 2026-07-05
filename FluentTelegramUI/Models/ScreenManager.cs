@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +13,16 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace FluentTelegramUI.Models
 {
     /// <summary>
-    /// Manages UI screens and handles navigation and event routing
+    /// Manages UI screens and handles navigation and event routing. Thread-safe
+    /// for concurrent updates across different chats, and serializes updates
+    /// within a single chat via per-chat locks.
     /// </summary>
     public class ScreenManager
     {
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<ScreenManager> _logger;
-        private readonly Dictionary<long, NavigationState> _navigationStates = new();
+        private readonly ConcurrentDictionary<long, NavigationState> _navigationStates = new();
+        private readonly ConcurrentDictionary<long, SemaphoreSlim> _chatLocks = new();
         private readonly Dictionary<string, Screen> _registeredScreens = new();
         private readonly StateMachine _stateMachine;
         private readonly FluentStyle _defaultStyle;
@@ -103,15 +107,15 @@ namespace FluentTelegramUI.Models
         /// <summary>
         /// Navigates to the main screen for a specific chat
         /// </summary>
-        public async Task NavigateToMainScreenAsync(long chatId, CancellationToken cancellationToken = default)
+        public Task NavigateToMainScreenAsync(long chatId, CancellationToken cancellationToken = default)
         {
             if (MainScreen == null)
             {
                 _logger.LogError("No main screen set");
-                return;
+                return Task.CompletedTask;
             }
 
-            await NavigateToScreenAsync(chatId, MainScreen.Id, cancellationToken);
+            return NavigateToScreenAsync(chatId, MainScreen.Id, cancellationToken);
         }
 
         /// <summary>
@@ -119,18 +123,10 @@ namespace FluentTelegramUI.Models
         /// </summary>
         public async Task NavigateToScreenAsync(long chatId, string screenId, CancellationToken cancellationToken = default)
         {
-            if (!_registeredScreens.TryGetValue(screenId, out var screen))
+            using (await LockChatAsync(chatId))
             {
-                _logger.LogError("Screen not found: {ScreenId}", screenId);
-                return;
+                await NavigateToScreenCoreAsync(chatId, screenId, cancellationToken);
             }
-
-            var navState = GetOrCreateNavigationState(chatId);
-            navState.CurrentScreenId = screenId;
-            _stateMachine.SetCurrentScreen(chatId, screenId);
-
-            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
-            navState.LastMessageId = message.MessageId;
         }
 
         /// <summary>
@@ -138,19 +134,29 @@ namespace FluentTelegramUI.Models
         /// </summary>
         public async Task RefreshCurrentScreenAsync(long chatId, CancellationToken cancellationToken = default)
         {
-            var navState = GetOrCreateNavigationState(chatId);
-            if (string.IsNullOrEmpty(navState.CurrentScreenId)
-                || !_registeredScreens.TryGetValue(navState.CurrentScreenId, out var screen))
+            using (await LockChatAsync(chatId))
             {
-                return;
+                await RefreshCurrentScreenCoreAsync(chatId, cancellationToken);
             }
-
-            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
-            navState.LastMessageId = message.MessageId;
         }
 
         /// <summary>
-        /// Handles a callback query. Returns true when the callback was handled by the screen system.
+        /// Resets all per-chat state: state variables, current screen, and
+        /// navigation state (including the tracked last message id). Call this
+        /// on <c>/start</c> to fully reset a chat before navigating. Thread-safe
+        /// via concurrent collections; does not block on per-chat async locks.
+        /// </summary>
+        public void ResetChat(long chatId)
+        {
+            _stateMachine.ResetChat(chatId);
+            _navigationStates.TryRemove(chatId, out _);
+        }
+
+        /// <summary>
+        /// Handles a callback query. Returns true when the callback was handled
+        /// by the screen system (navigation, back, or a matching screen handler);
+        /// false when no screen-level handler matched so the caller may forward
+        /// it to a custom <see cref="IFluentUpdateHandler"/>.
         /// </summary>
         public async Task<bool> HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
         {
@@ -161,53 +167,56 @@ namespace FluentTelegramUI.Models
                 return false;
             }
 
-            var navState = GetOrCreateNavigationState(chatId.Value);
-            if (string.IsNullOrEmpty(navState.CurrentScreenId)
-                || !_registeredScreens.TryGetValue(navState.CurrentScreenId, out var currentScreen))
+            using (await LockChatAsync(chatId.Value))
             {
-                _logger.LogWarning("No current screen for chat {ChatId}", chatId);
-                return false;
-            }
-
-            if (callbackQuery.Data?.StartsWith("screen:", StringComparison.Ordinal) == true)
-            {
-                var targetScreenId = callbackQuery.Data[7..];
-                await NavigateToScreenAsync(chatId.Value, targetScreenId, cancellationToken);
-                await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
-                return true;
-            }
-
-            if (callbackQuery.Data == "back" && currentScreen.ParentScreen != null)
-            {
-                await NavigateToScreenAsync(chatId.Value, currentScreen.ParentScreen.Id, cancellationToken);
-                await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
-                return true;
-            }
-
-            var handled = false;
-            if (callbackQuery.Data != null
-                && CallbackMatcher.TryResolveHandler(currentScreen, callbackQuery.Data, out var handler))
-            {
-                try
+                var navState = GetOrCreateNavigationState(chatId.Value);
+                if (string.IsNullOrEmpty(navState.CurrentScreenId)
+                    || !_registeredScreens.TryGetValue(navState.CurrentScreenId, out var currentScreen))
                 {
-                    var context = BuildContext(chatId.Value, callbackQuery);
-                    handled = await handler(callbackQuery.Data, context);
+                    _logger.LogWarning("No current screen for chat {ChatId}", chatId);
+                    return false;
                 }
-                catch (Exception ex)
+
+                if (callbackQuery.Data?.StartsWith(CallbackPrefixes.Screen, StringComparison.Ordinal) == true)
                 {
-                    _logger.LogError(ex, "Error in event handler: {Message}", ex.Message);
+                    var targetScreenId = callbackQuery.Data[CallbackPrefixes.Screen.Length..];
+                    await NavigateToScreenCoreAsync(chatId.Value, targetScreenId, cancellationToken);
+                    await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
+                    return true;
                 }
+
+                if (callbackQuery.Data == CallbackPrefixes.Back && currentScreen.ParentScreen != null)
+                {
+                    await NavigateToScreenCoreAsync(chatId.Value, currentScreen.ParentScreen.Id, cancellationToken);
+                    await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
+                    return true;
+                }
+
+                var handled = false;
+                if (callbackQuery.Data != null
+                    && CallbackMatcher.TryResolveHandler(currentScreen, callbackQuery.Data, out var handler))
+                {
+                    try
+                    {
+                        var context = BuildContext(chatId.Value, callbackQuery);
+                        handled = await handler(callbackQuery.Data, context);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in event handler: {Message}", ex.Message);
+                    }
+                }
+
+                await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
+
+                if (handled)
+                {
+                    var message = await DisplayScreenAsync(chatId.Value, currentScreen, navState, forceNewMessage: false, cancellationToken);
+                    navState.LastMessageId = message.MessageId;
+                }
+
+                return handled;
             }
-
-            await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
-
-            if (handled)
-            {
-                var message = await DisplayScreenAsync(chatId.Value, currentScreen, navState, forceNewMessage: false, cancellationToken);
-                navState.LastMessageId = message.MessageId;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -235,11 +244,40 @@ namespace FluentTelegramUI.Models
 
         public void ClearState(long chatId) => _stateMachine.ClearState(chatId);
 
-        public string? GetCurrentState(long chatId) => _stateMachine.GetState<string?>(chatId, "state");
+        public string? GetCurrentState(long chatId) => _stateMachine.GetState<string?>(chatId, StateKeys.Workflow);
 
-        public void SetCurrentState(long chatId, string stateName) => _stateMachine.SetState(chatId, "state", stateName);
+        public void SetCurrentState(long chatId, string stateName) => _stateMachine.SetState(chatId, StateKeys.Workflow, stateName);
 
         public bool GetScreenById(string screenId, out Screen? screen) => TryGetScreen(screenId, out screen);
+
+        private async Task NavigateToScreenCoreAsync(long chatId, string screenId, CancellationToken cancellationToken)
+        {
+            if (!_registeredScreens.TryGetValue(screenId, out var screen))
+            {
+                _logger.LogError("Screen not found: {ScreenId}", screenId);
+                return;
+            }
+
+            var navState = GetOrCreateNavigationState(chatId);
+            navState.CurrentScreenId = screenId;
+            _stateMachine.SetCurrentScreen(chatId, screenId);
+
+            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
+            navState.LastMessageId = message.MessageId;
+        }
+
+        private async Task RefreshCurrentScreenCoreAsync(long chatId, CancellationToken cancellationToken)
+        {
+            var navState = GetOrCreateNavigationState(chatId);
+            if (string.IsNullOrEmpty(navState.CurrentScreenId)
+                || !_registeredScreens.TryGetValue(navState.CurrentScreenId, out var screen))
+            {
+                return;
+            }
+
+            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
+            navState.LastMessageId = message.MessageId;
+        }
 
         private async Task<Telegram.Bot.Types.Message> DisplayScreenAsync(
             long chatId,
@@ -383,22 +421,42 @@ namespace FluentTelegramUI.Models
         private Task AnswerCallbackAsync(string callbackQueryId, CancellationToken cancellationToken) =>
             _botClient.AnswerCallbackQuery(callbackQueryId, cancellationToken: cancellationToken);
 
-        private NavigationState GetOrCreateNavigationState(long chatId)
-        {
-            if (!_navigationStates.TryGetValue(chatId, out var state))
-            {
-                state = new NavigationState();
-                _navigationStates[chatId] = state;
-            }
+        private NavigationState GetOrCreateNavigationState(long chatId) =>
+            _navigationStates.GetOrAdd(chatId, _ => new NavigationState());
 
-            return state;
+        private Task<ChatLock> LockChatAsync(long chatId)
+        {
+            var gate = _chatLocks.GetOrAdd(chatId, _ => new SemaphoreSlim(1, 1));
+            return ChatLock.AcquireAsync(gate);
         }
 
         private sealed class NavigationState
         {
             public string CurrentScreenId { get; set; } = string.Empty;
             public int LastMessageId { get; set; }
-            public Dictionary<string, string> InputData { get; set; } = new();
+        }
+
+        private sealed class ChatLock : IDisposable
+        {
+            private readonly SemaphoreSlim _gate;
+            private bool _disposed;
+
+            private ChatLock(SemaphoreSlim gate) => _gate = gate;
+
+            public static async Task<ChatLock> AcquireAsync(SemaphoreSlim gate)
+            {
+                await gate.WaitAsync().ConfigureAwait(false);
+                return new ChatLock(gate);
+            }
+
+            public void Dispose()
+            {
+                if (!_disposed)
+                {
+                    _gate.Release();
+                    _disposed = true;
+                }
+            }
         }
     }
 }

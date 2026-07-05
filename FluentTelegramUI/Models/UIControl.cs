@@ -220,7 +220,7 @@ namespace FluentTelegramUI.Models
         {
             bool isOn = context.GetControlState(this, "isOn", IsOn);
             string stateText = isOn ? OnText : OffText;
-            string fullCallbackData = $"{CallbackData}:{(isOn ? "off" : "on")}";
+            string fullCallbackData = $"{CallbackData}:{(isOn ? ToggleActions.Off : ToggleActions.On)}";
 
             return new Message
             {
@@ -305,14 +305,14 @@ namespace FluentTelegramUI.Models
             {
                 if (currentIndex > 0)
                 {
-                    message.Buttons.Add(new Button { Text = "◀️ Prev", CallbackData = $"carousel:{Id}:prev" });
+                    message.Buttons.Add(new Button { Text = "◀️ Prev", CallbackData = $"{CallbackPrefixes.Carousel}{Id}:{CarouselActions.Previous}" });
                 }
 
-                message.Buttons.Add(new Button { Text = $"{currentIndex + 1}/{ImageUrls.Count}", CallbackData = $"carousel:{Id}:info" });
+                message.Buttons.Add(new Button { Text = $"{currentIndex + 1}/{ImageUrls.Count}", CallbackData = $"{CallbackPrefixes.Carousel}{Id}:{CarouselActions.Info}" });
 
                 if (currentIndex < ImageUrls.Count - 1)
                 {
-                    message.Buttons.Add(new Button { Text = "Next ▶️", CallbackData = $"carousel:{Id}:next" });
+                    message.Buttons.Add(new Button { Text = "Next ▶️", CallbackData = $"{CallbackPrefixes.Carousel}{Id}:{CarouselActions.Next}" });
                 }
 
                 message.ButtonsPerRow = 3;
@@ -436,7 +436,7 @@ namespace FluentTelegramUI.Models
         {
             bool isExpanded = context.GetControlState(this, "expanded", IsExpanded);
             string buttonText = isExpanded ? "▼ Collapse" : "▶ Expand";
-            string callbackData = $"accordion:{Id}:{(isExpanded ? "collapse" : "expand")}";
+            string callbackData = $"{CallbackPrefixes.Accordion}{Id}:{(isExpanded ? AccordionActions.Collapse : AccordionActions.Expand)}";
 
             return new Message
             {
