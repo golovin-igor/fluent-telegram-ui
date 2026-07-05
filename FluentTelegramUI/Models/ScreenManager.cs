@@ -158,7 +158,7 @@ namespace FluentTelegramUI.Models
         /// Handles a callback query. Returns true when the callback was handled
         /// by the screen system (navigation, back, or a matching screen handler);
         /// false when no screen-level handler matched so the caller may forward
-        /// it to a custom <see cref="IFluentUpdateHandler"/>.
+        /// it to a custom <see cref="FluentTelegramUI.Handlers.IFluentUpdateHandler"/>.
         /// </summary>
         public async Task<bool> HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
         {

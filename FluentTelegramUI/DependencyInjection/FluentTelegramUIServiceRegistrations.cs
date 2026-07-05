@@ -11,7 +11,7 @@ namespace FluentTelegramUI.DependencyInjection;
 
 /// <summary>
 /// Shared core service registrations used by both <see cref="TelegramBotBuilder"/>
-/// and <see cref="ServiceCollectionExtensions.AddFluentTelegramUI"/>. Keeps the
+/// and <c>ServiceCollectionExtensions.AddFluentTelegramUI</c>. Keeps the
 /// two composition roots consistent.
 /// </summary>
 internal static class FluentTelegramUIServiceRegistrations

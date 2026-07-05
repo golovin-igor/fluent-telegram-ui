@@ -136,7 +136,7 @@ namespace FluentTelegramUI.Tests
                 (client, ex, ct) => Task.CompletedTask;
             
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new UpdateHandler(null, errorHandler));
+            Assert.Throws<ArgumentNullException>(() => new UpdateHandler(null!, errorHandler));
         }
         
         [Fact]
@@ -147,7 +147,7 @@ namespace FluentTelegramUI.Tests
                 (client, update, ct) => Task.CompletedTask;
             
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new UpdateHandler(updateHandler, null));
+            Assert.Throws<ArgumentNullException>(() => new UpdateHandler(updateHandler, null!));
         }
     }
 } 

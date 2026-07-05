@@ -90,7 +90,7 @@ namespace FluentTelegramUI.Tests
                 .Build();
             
             // Assert
-            Assert.Equal(1, card.AdditionalInfo.Count);
+            Assert.Single(card.AdditionalInfo);
             Assert.Equal(price, card.AdditionalInfo["Price"]);
         }
         

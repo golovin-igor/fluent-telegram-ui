@@ -23,7 +23,7 @@ namespace FluentTelegramUI
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<FluentTelegramBot> _logger;
         private readonly FluentStyle _defaultStyle;
-        private IFluentUpdateHandler _updateHandler;
+        private IFluentUpdateHandler _updateHandler = null!;
         private readonly ScreenManager _screenManager;
         private CancellationTokenSource? _receivingCts;
         
@@ -81,7 +81,7 @@ namespace FluentTelegramUI
                 _screenManager = new ScreenManager(_botClient, screenManagerLogger, stateMachine, _defaultStyle, localization);
             }
             
-            _updateHandler = _serviceProvider.GetService<IFluentUpdateHandler>();
+            _updateHandler = _serviceProvider.GetService<IFluentUpdateHandler>()!;
             if (_updateHandler == null)
             {
                 var handlerLogger = CreateDefaultLoggerForHandler();

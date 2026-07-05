@@ -72,7 +72,7 @@ namespace FluentTelegramUI.Handlers
 
                     try
                     {
-                        bool result = await handler(message.Text, context);
+                        bool result = await handler(message.Text!, context);
                         if (result)
                         {
                             await _screenManager.RefreshCurrentScreenAsync(message.Chat.Id, cancellationToken);

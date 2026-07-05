@@ -84,7 +84,7 @@ namespace FluentTelegramUI.Tests
         {
             // Arrange
             var screen = new Screen();
-            Dictionary<string, object> capturedContext = null;
+            Dictionary<string, object> capturedContext = null!;
             
             // Set up text input handler
             screen.OnTextInput("test_state", (text, context) => {

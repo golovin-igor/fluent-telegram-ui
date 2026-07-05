@@ -1,193 +1,127 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentTelegramUI.Handlers;
 using FluentTelegramUI.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Telegram.Bot;
-using Telegram.Bot.Polling;
+using Telegram.Bot.Requests.Abstractions;
 using Telegram.Bot.Types;
 using Xunit;
+using Message = Telegram.Bot.Types.Message;
 
 namespace FluentTelegramUI.Tests
 {
     public class FluentTelegramBotTests
     {
-        [Fact]
-        public void FluentTelegramBot_CanBeConstructed_WithProperServiceProvider()
+        private static FluentTelegramBot BuildBot(Mock<ITelegramBotClient> clientMock)
         {
-            // This test verifies that a FluentTelegramBot can be constructed with a properly configured service provider.
-            // Not actually testing construction here since it requires too much mock setup,
-            // but documenting that this would be tested in an integration test.
-            
-            // A real test would need:
-            // - A properly configured service provider
-            // - Mocked ITelegramBotClient
-            // - Optional mocked ILogger and IFluentUpdateHandler
-            
-            // In reality this would be covered by integration tests
-            Assert.True(true);
+            var services = new ServiceCollection();
+            services.AddSingleton<ITelegramBotClient>(clientMock.Object);
+            services.AddLogging();
+            services.AddFluentTelegramUICoreForTesting();
+            return new FluentTelegramBot(services.BuildServiceProvider());
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_StartReceiving_IsImplemented()
+        public async Task SendMessageAsync_SendsTextThroughClient()
         {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("StartReceiving");
-            
-            // Assert
-            Assert.NotNull(method);
-            var parameters = method.GetParameters();
-            Assert.Single(parameters);
-            Assert.Equal(typeof(CancellationToken), parameters[0].ParameterType);
+            var clientMock = new Mock<ITelegramBotClient>();
+            string? capturedText = null;
+            clientMock.Setup(m => m.SendRequest(
+                    It.IsAny<IRequest<Message>>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<IRequest<Message>, CancellationToken>((req, _) =>
+                {
+                    capturedText = req.GetType().GetProperty("Text")?.GetValue(req) as string;
+                })
+                .ReturnsAsync(new Message());
+
+            var bot = BuildBot(clientMock);
+
+            await bot.SendMessageAsync(123, new Models.Message { Text = "Hello, bot!" });
+
+            capturedText.Should().Be("Hello, bot!");
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_StopReceiving_IsImplemented()
+        public void RegisterScreen_And_TryGetScreen_RoundTrip()
         {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("StopReceiving");
-            
-            // Assert
-            Assert.NotNull(method);
-            Assert.Empty(method.GetParameters());
+            var bot = BuildBot(new Mock<ITelegramBotClient>());
+            var screen = new Screen { Title = "Settings" };
+
+            bot.RegisterScreen(screen);
+
+            bot.TryGetScreen(screen.Id, out var found).Should().BeTrue();
+            found.Should().BeSameAs(screen);
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_SendMessageAsync_IsImplemented()
+        public void SetMainScreen_ExposesMainScreenProperty()
         {
-            // Verify the chat ID overload is implemented
-            var botType = typeof(FluentTelegramBot);
-            var methods = botType.GetMethods();
-            
-            var chatIdMethod = Array.Find(methods, m => 
-                m.Name == "SendMessageAsync" && 
-                m.GetParameters().Length > 1 && 
-                m.GetParameters()[0].ParameterType == typeof(ChatId));
-            
-            // Assert
-            Assert.NotNull(chatIdMethod);
+            var bot = BuildBot(new Mock<ITelegramBotClient>());
+            var screen = new Screen { Title = "Main" };
+
+            bot.SetMainScreen(screen);
+
+            bot.MainScreen.Should().BeSameAs(screen);
+            bot.ScreenManager.Should().NotBeNull();
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_CreateScreen_IsImplemented()
+        public async Task NavigateToScreenAsync_DisplaysTargetScreen()
         {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var methods = botType.GetMethods();
-            
-            var createScreenMethod = Array.Find(methods, m => 
-                m.Name == "CreateScreen" && 
-                m.GetParameters().Length >= 1 && 
-                m.GetParameters()[0].ParameterType == typeof(string));
-            
-            // Assert
-            createScreenMethod.Should().NotBeNull();
-            createScreenMethod.ReturnType.Should().Be(typeof(Models.Screen));
+            var clientMock = new Mock<ITelegramBotClient>();
+            var sendCount = 0;
+            clientMock.SetupSendMessage(() => sendCount++);
+
+            var bot = BuildBot(clientMock);
+            var main = new Screen { Id = "main", Title = "Main", Content = new Models.Message { Text = "Main" } };
+            var details = new Screen { Id = "details", Title = "Details", Content = new Models.Message { Text = "Details" } };
+            bot.RegisterScreen(main, isMainScreen: true);
+            bot.RegisterScreen(details);
+
+            await bot.NavigateToScreenAsync(42, "details");
+
+            sendCount.Should().Be(1);
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_RegisterScreen_IsImplemented()
+        public async Task NavigateToMainScreenAsync_DisplaysMainScreen()
         {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("RegisterScreen");
-            
-            // Assert
-            method.Should().NotBeNull();
-            method.GetParameters().Should().HaveCount(2);
-            method.GetParameters()[0].ParameterType.Should().Be(typeof(Models.Screen));
-            method.GetParameters()[1].ParameterType.Should().Be(typeof(bool));
+            var clientMock = new Mock<ITelegramBotClient>();
+            var sendCount = 0;
+            clientMock.SetupSendMessage(() => sendCount++);
+
+            var bot = BuildBot(clientMock);
+            var main = new Screen { Id = "main", Title = "Main", Content = new Models.Message { Text = "Main" } };
+            bot.RegisterScreen(main, isMainScreen: true);
+
+            await bot.NavigateToMainScreenAsync(7);
+
+            sendCount.Should().Be(1);
         }
-        
+
         [Fact]
-        public void FluentTelegramBot_SetMainScreen_IsImplemented()
+        public void MainScreen_And_ScreenManager_PropertiesAreReadOnly()
         {
-            // Verify the method is implemented
             var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("SetMainScreen");
-            
-            // Assert
-            method.Should().NotBeNull();
-            method.GetParameters().Should().HaveCount(1);
-            method.GetParameters()[0].ParameterType.Should().Be(typeof(Models.Screen));
-        }
-        
-        [Fact]
-        public void FluentTelegramBot_NavigateToScreenAsync_IsImplemented()
-        {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("NavigateToScreenAsync");
-            
-            // Assert
-            method.Should().NotBeNull();
-            method.GetParameters().Should().HaveCountGreaterThanOrEqualTo(2);
-            method.GetParameters()[0].ParameterType.Should().Be(typeof(long));
-            method.GetParameters()[1].ParameterType.Should().Be(typeof(string));
-            method.ReturnType.Should().Be(typeof(Task));
-        }
-        
-        [Fact]
-        public void FluentTelegramBot_NavigateToMainScreenAsync_IsImplemented()
-        {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("NavigateToMainScreenAsync");
-            
-            // Assert
-            method.Should().NotBeNull();
-            method.GetParameters().Should().HaveCountGreaterThanOrEqualTo(1);
-            method.GetParameters()[0].ParameterType.Should().Be(typeof(long));
-            method.ReturnType.Should().Be(typeof(Task));
-        }
-        
-        [Fact]
-        public void FluentTelegramBot_TryGetScreen_IsImplemented()
-        {
-            // Verify the method is implemented
-            var botType = typeof(FluentTelegramBot);
-            var method = botType.GetMethod("TryGetScreen");
-            
-            // Assert
-            method.Should().NotBeNull();
-            method.GetParameters().Should().HaveCount(2);
-            method.GetParameters()[0].ParameterType.Should().Be(typeof(string));
-            method.GetParameters()[1].ParameterType.Should().Be(typeof(Models.Screen).MakeByRefType());
-            method.ReturnType.Should().Be(typeof(bool));
-        }
-        
-        [Fact]
-        public void FluentTelegramBot_MainScreen_PropertyExists()
-        {
-            // Verify the property exists
-            var botType = typeof(FluentTelegramBot);
-            var property = botType.GetProperty("MainScreen");
-            
-            // Assert
-            property.Should().NotBeNull();
-            property.PropertyType.Should().Be(typeof(Models.Screen));
-            property.CanRead.Should().BeTrue();
-            property.CanWrite.Should().BeFalse();
-        }
-        
-        [Fact]
-        public void FluentTelegramBot_ScreenManager_PropertyExists()
-        {
-            // Verify the property exists
-            var botType = typeof(FluentTelegramBot);
-            var property = botType.GetProperty("ScreenManager");
-            
-            // Assert
-            property.Should().NotBeNull();
-            property.PropertyType.Should().Be(typeof(Models.ScreenManager));
-            property.CanRead.Should().BeTrue();
-            property.CanWrite.Should().BeFalse();
+            botType.GetProperty("MainScreen")!.CanWrite.Should().BeFalse();
+            botType.GetProperty("ScreenManager")!.CanWrite.Should().BeFalse();
         }
     }
-} 
+
+    internal static class FluentTelegramBotTestServiceRegistration
+    {
+        public static IServiceCollection AddFluentTelegramUICoreForTesting(this IServiceCollection services)
+        {
+            services.Configure<DependencyInjection.FluentTelegramUIOptions>(o => o.BotToken = "test");
+            services.AddSingleton<StateMachine>();
+            services.AddSingleton<IStateStore>(sp => sp.GetRequiredService<StateMachine>());
+            services.AddSingleton<Resources.ILocalizationService, Resources.LocalizationService>();
+            services.AddSingleton<ScreenManager>();
+            return services;
+        }
+    }
+}
