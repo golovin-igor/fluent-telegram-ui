@@ -141,6 +141,8 @@ public sealed class ScreenRenderer
         var title = FluentStyleTemplates.ApplyTitle(style, ResolveTitleText(chatId, screen));
         var text = !string.IsNullOrEmpty(title) ? $"<b>{title}</b>\n\n{body}" : body;
 
+        AddBackButton(chatId, screen, allButtons);
+
         return new Message
         {
             Text = text,
@@ -161,6 +163,20 @@ public sealed class ScreenRenderer
         }
 
         return screen.Title;
+    }
+
+    private void AddBackButton(long chatId, Screen screen, List<Button> buttons)
+    {
+        if (!screen.AllowBackNavigation || screen.ParentScreen == null)
+        {
+            return;
+        }
+
+        var text = !string.IsNullOrEmpty(screen.BackButtonResourceKey) && _localization != null
+            ? _localization.GetString(chatId, screen.BackButtonResourceKey)
+            : screen.BackButtonText;
+
+        buttons.Add(new Button { Text = text, CallbackData = CallbackPrefixes.Back });
     }
 
     private string ResolveContentText(long chatId, string? text, string? resourceKey)
