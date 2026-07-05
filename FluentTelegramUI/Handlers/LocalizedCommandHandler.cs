@@ -1,5 +1,7 @@
 using System.Text;
 using FluentTelegramUI.Resources;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -7,20 +9,36 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FluentTelegramUI.Handlers
 {
+    /// <summary>
+    /// Handles localized slash commands (/start, /help, /settings, /language).
+    /// </summary>
     public interface ICommandHandler
     {
+        /// <summary>Handles a command message.</summary>
         Task HandleCommandAsync(Message message);
     }
 
+    /// <summary>
+    /// A localized command handler that resolves strings per chat from
+    /// <see cref="ILocalizationService"/>.
+    /// </summary>
     public class LocalizedCommandHandler : ICommandHandler
     {
         private readonly ILocalizationService _localization;
         private readonly ITelegramBotClient _botClient;
+        private readonly ILogger<LocalizedCommandHandler> _logger;
 
-        public LocalizedCommandHandler(ITelegramBotClient botClient, ILocalizationService? localization = null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalizedCommandHandler"/> class.
+        /// </summary>
+        public LocalizedCommandHandler(
+            ITelegramBotClient botClient,
+            ILocalizationService localization,
+            ILogger<LocalizedCommandHandler>? logger = null)
         {
-            _localization = localization ?? LocalizationService.Instance;
             _botClient = botClient;
+            _localization = localization;
+            _logger = logger ?? NullLogger<LocalizedCommandHandler>.Instance;
         }
 
         public async Task HandleCommandAsync(Message message)

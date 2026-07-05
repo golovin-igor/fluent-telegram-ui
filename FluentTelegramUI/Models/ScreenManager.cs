@@ -27,6 +27,7 @@ namespace FluentTelegramUI.Models
         private readonly StateMachine _stateMachine;
         private readonly FluentStyle _defaultStyle;
         private readonly ILocalizationService? _localization;
+        private readonly ScreenRenderer _renderer;
 
         /// <summary>
         /// Gets the main screen from which navigation starts
@@ -61,6 +62,7 @@ namespace FluentTelegramUI.Models
             _stateMachine = stateMachine;
             _defaultStyle = defaultStyle;
             _localization = localization;
+            _renderer = new ScreenRenderer(botClient, logger, stateMachine, defaultStyle, localization);
         }
 
         /// <summary>
@@ -211,7 +213,7 @@ namespace FluentTelegramUI.Models
 
                 if (handled)
                 {
-                    var message = await DisplayScreenAsync(chatId.Value, currentScreen, navState, forceNewMessage: false, cancellationToken);
+                    var message = await _renderer.DisplayAsync(chatId.Value, currentScreen, navState.LastMessageId, forceNewMessage: false, cancellationToken);
                     navState.LastMessageId = message.MessageId;
                 }
 
@@ -262,7 +264,7 @@ namespace FluentTelegramUI.Models
             navState.CurrentScreenId = screenId;
             _stateMachine.SetCurrentScreen(chatId, screenId);
 
-            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
+            var message = await _renderer.DisplayAsync(chatId, screen, navState.LastMessageId, forceNewMessage: false, cancellationToken);
             navState.LastMessageId = message.MessageId;
         }
 
@@ -275,133 +277,8 @@ namespace FluentTelegramUI.Models
                 return;
             }
 
-            var message = await DisplayScreenAsync(chatId, screen, navState, forceNewMessage: false, cancellationToken);
+            var message = await _renderer.DisplayAsync(chatId, screen, navState.LastMessageId, forceNewMessage: false, cancellationToken);
             navState.LastMessageId = message.MessageId;
-        }
-
-        private async Task<Telegram.Bot.Types.Message> DisplayScreenAsync(
-            long chatId,
-            Screen screen,
-            NavigationState navState,
-            bool forceNewMessage,
-            CancellationToken cancellationToken)
-        {
-            var renderMessage = BuildRenderMessage(chatId, screen);
-            var markup = renderMessage.ToInlineKeyboardMarkup();
-
-            if (!forceNewMessage && navState.LastMessageId != 0)
-            {
-                try
-                {
-                    if (renderMessage.HasImage)
-                    {
-                        return await _botClient.SendPhoto(
-                            chatId: chatId,
-                            photo: renderMessage.ImageUrl,
-                            caption: renderMessage.GetEffectiveImageCaption(),
-                            parseMode: renderMessage.ParseMarkdown ? ParseMode.Html : ParseMode.None,
-                            replyMarkup: markup as InlineKeyboardMarkup,
-                            cancellationToken: cancellationToken);
-                    }
-
-                    return await _botClient.EditMessageText(
-                        chatId: chatId,
-                        messageId: navState.LastMessageId,
-                        text: renderMessage.Text,
-                        parseMode: renderMessage.ParseMarkdown ? ParseMode.Html : ParseMode.None,
-                        replyMarkup: markup as InlineKeyboardMarkup,
-                        cancellationToken: cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "Edit failed for chat {ChatId}, sending a new message.", chatId);
-                }
-            }
-
-            if (renderMessage.HasImage)
-            {
-                return await _botClient.SendPhoto(
-                    chatId: chatId,
-                    photo: renderMessage.ImageUrl,
-                    caption: renderMessage.GetEffectiveImageCaption(),
-                    parseMode: renderMessage.ParseMarkdown ? ParseMode.Html : ParseMode.None,
-                    replyMarkup: markup as InlineKeyboardMarkup,
-                    cancellationToken: cancellationToken);
-            }
-
-            return await _botClient.SendMessage(
-                chatId: chatId,
-                text: renderMessage.Text,
-                parseMode: renderMessage.ParseMarkdown ? ParseMode.Html : ParseMode.None,
-                replyMarkup: markup,
-                cancellationToken: cancellationToken);
-        }
-
-        private Message BuildRenderMessage(long chatId, Screen screen)
-        {
-            var mainMessage = screen.Content;
-            var style = mainMessage.Style == FluentStyle.Default ? _defaultStyle : mainMessage.Style;
-            var renderContext = new ScreenRenderContext(
-                chatId,
-                screen,
-                (key, defaultValue) => _stateMachine.GetState(chatId, key, defaultValue) ?? defaultValue!);
-
-            var bodyParts = new List<string>();
-            var allButtons = new List<Button>(mainMessage.Buttons);
-
-            foreach (var control in screen.Controls)
-            {
-                var controlMsg = control.ToMessage(renderContext);
-                if (!string.IsNullOrEmpty(controlMsg.Text))
-                {
-                    bodyParts.Add(controlMsg.Text);
-                }
-
-                allButtons.AddRange(controlMsg.Buttons);
-            }
-
-            var body = ResolveContentText(chatId, mainMessage.Text, screen.ContentResourceKey);
-            if (bodyParts.Count > 0)
-            {
-                body = string.IsNullOrEmpty(body)
-                    ? string.Join("\n\n", bodyParts)
-                    : $"{body}\n\n{string.Join("\n\n", bodyParts)}";
-            }
-
-            body = FluentStyleTemplates.ApplyBody(style, body);
-            var title = FluentStyleTemplates.ApplyTitle(style, ResolveTitleText(chatId, screen));
-            var text = !string.IsNullOrEmpty(title) ? $"<b>{title}</b>\n\n{body}" : body;
-
-            return new Message
-            {
-                Text = text,
-                ParseMarkdown = true,
-                Style = style,
-                Buttons = allButtons,
-                ButtonsPerRow = mainMessage.ButtonsPerRow,
-                ImageUrl = mainMessage.ImageUrl,
-                ImageCaption = mainMessage.ImageCaption
-            };
-        }
-
-        private string ResolveTitleText(long chatId, Screen screen)
-        {
-            if (!string.IsNullOrEmpty(screen.TitleResourceKey) && _localization != null)
-            {
-                return _localization.GetString(chatId, screen.TitleResourceKey);
-            }
-
-            return screen.Title;
-        }
-
-        private string ResolveContentText(long chatId, string? text, string? resourceKey)
-        {
-            if (!string.IsNullOrEmpty(resourceKey) && _localization != null)
-            {
-                return _localization.GetString(chatId, resourceKey);
-            }
-
-            return text ?? string.Empty;
         }
 
         private static Dictionary<string, object> BuildContext(long chatId, CallbackQuery callbackQuery)

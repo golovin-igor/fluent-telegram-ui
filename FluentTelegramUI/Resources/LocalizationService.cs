@@ -1,31 +1,31 @@
 using System.Globalization;
 using System.Resources;
 using FluentTelegramUI.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FluentTelegramUI.Resources;
 
 /// <summary>
-/// Service for managing localization resources.
+/// Service for managing localization resources. Register via dependency
+/// injection (<c>AddFluentTelegramUI</c> or <c>TelegramBotBuilder.Build</c>)
+/// so it is bound to the shared <see cref="IStateStore"/>.
 /// </summary>
 public sealed class LocalizationService : ILocalizationService
 {
-    private static LocalizationService? _instance;
     private readonly ResourceManager _resourceManager;
+    private readonly ILogger _logger;
     private IStateStore? _stateStore;
-
-    /// <summary>
-    /// Gets the singleton instance of the localization service.
-    /// </summary>
-    public static LocalizationService Instance => _instance ??= new LocalizationService();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalizationService"/> class.
     /// </summary>
-    public LocalizationService()
+    public LocalizationService(ILogger<LocalizationService>? logger = null)
     {
         _resourceManager = new ResourceManager(
             "FluentTelegramUI.Resources.Strings",
             typeof(LocalizationService).Assembly);
+        _logger = logger ?? NullLogger<LocalizationService>.Instance;
         DefaultCulture = CultureInfo.CurrentUICulture.Name;
     }
 
@@ -56,8 +56,9 @@ public sealed class LocalizationService : ILocalizationService
         {
             return string.Format(template, args);
         }
-        catch
+        catch (FormatException ex)
         {
+            _logger.LogWarning(ex, "Failed to format localized string '{Key}'.", key);
             return template;
         }
     }
@@ -70,8 +71,9 @@ public sealed class LocalizationService : ILocalizationService
             var culture = CreateCulture(cultureName ?? DefaultCulture);
             return _resourceManager.GetString(key, culture) ?? key;
         }
-        catch
+        catch (Exception ex) when (ex is CultureNotFoundException or MissingManifestResourceException)
         {
+            _logger.LogWarning(ex, "Failed to resolve localized string '{Key}' for culture '{Culture}'.", key, cultureName);
             return key;
         }
     }

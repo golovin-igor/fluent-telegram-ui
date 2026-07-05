@@ -118,27 +118,18 @@ namespace FluentTelegramUI
             }
             
             var serviceCollection = new ServiceCollection();
+
+            // Pre-register the bot client override (or one from the token) so the
+            // shared core's TryAdd registration does not replace it.
             serviceCollection.AddSingleton<ITelegramBotClient>(_botClientOverride ?? new TelegramBotClient(_token));
-            serviceCollection.Configure<FluentTelegramUIOptions>(options =>
+
+            FluentTelegramUIServiceRegistrations.AddCore(serviceCollection, options =>
             {
                 options.BotToken = _token;
                 options.DefaultStyle = _defaultStyle;
+                options.DefaultCulture = "en";
             });
             serviceCollection.AddLogging();
-
-            var stateMachine = new StateMachine();
-            serviceCollection.AddSingleton(stateMachine);
-            serviceCollection.AddSingleton<IStateStore>(stateMachine);
-            var localization = LocalizationServiceRegistration.AddFluentTelegramUILocalization(
-                serviceCollection,
-                stateMachine,
-                defaultCulture: "en");
-            serviceCollection.AddSingleton(sp => new ScreenManager(
-                sp.GetRequiredService<ITelegramBotClient>(),
-                sp.GetRequiredService<ILogger<ScreenManager>>(),
-                stateMachine,
-                _defaultStyle,
-                localization));
 
             if (_updateHandler != null)
             {
