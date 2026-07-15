@@ -169,6 +169,10 @@ namespace FluentTelegramUI.Models
                 return false;
             }
 
+            Func<string, Dictionary<string, object>, Task<bool>>? handler = null;
+            string? screenIdBeforeHandler = null;
+            Dictionary<string, object>? context = null;
+
             using (await LockChatAsync(chatId.Value))
             {
                 var navState = GetOrCreateNavigationState(chatId.Value);
@@ -194,27 +198,40 @@ namespace FluentTelegramUI.Models
                     return true;
                 }
 
-                var handled = false;
                 if (callbackQuery.Data != null
-                    && CallbackMatcher.TryResolveHandler(currentScreen, callbackQuery.Data, out var handler))
+                    && CallbackMatcher.TryResolveHandler(currentScreen, callbackQuery.Data, out handler))
                 {
-                    try
-                    {
-                        var context = BuildContext(chatId.Value, callbackQuery);
-                        handled = await handler(callbackQuery.Data, context);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in event handler: {Message}", ex.Message);
-                    }
+                    screenIdBeforeHandler = currentScreen.Id;
+                    context = BuildContext(chatId.Value, callbackQuery);
                 }
+            }
 
+            // Invoke handlers outside the chat lock so Refresh/Navigate inside
+            // handlers can acquire it without deadlocking.
+            var handled = false;
+            if (handler != null && callbackQuery.Data != null && context != null)
+            {
+                try
+                {
+                    handled = await handler(callbackQuery.Data, context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in event handler: {Message}", ex.Message);
+                }
+            }
+
+            using (await LockChatAsync(chatId.Value))
+            {
                 await AnswerCallbackAsync(callbackQuery.Id, cancellationToken);
 
-                if (handled)
+                // Refresh only when still on the same screen. Handlers that navigate
+                // already displayed the target via NavigateToScreenAsync.
+                if (handled
+                    && screenIdBeforeHandler != null
+                    && GetOrCreateNavigationState(chatId.Value).CurrentScreenId == screenIdBeforeHandler)
                 {
-                    var message = await _renderer.DisplayAsync(chatId.Value, currentScreen, navState.LastMessageId, forceNewMessage: false, cancellationToken);
-                    navState.LastMessageId = message.MessageId;
+                    await RefreshCurrentScreenCoreAsync(chatId.Value, cancellationToken);
                 }
 
                 return handled;
@@ -328,11 +345,13 @@ namespace FluentTelegramUI.Models
 
             public void Dispose()
             {
-                if (!_disposed)
+                if (_disposed)
                 {
-                    _gate.Release();
-                    _disposed = true;
+                    return;
                 }
+
+                _disposed = true;
+                _gate.Release();
             }
         }
     }

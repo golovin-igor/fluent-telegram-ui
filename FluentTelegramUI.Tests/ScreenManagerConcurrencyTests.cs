@@ -83,5 +83,75 @@ namespace FluentTelegramUI.Tests
                 manager.StateMachine.GetState<int>(chatId, $"key-{i}", -1).Should().Be(i);
             }
         }
+
+        [Fact]
+        public async Task CallbackHandler_ThatCallsRefresh_DoesNotDeadlock()
+        {
+            var manager = BuildManager(out _);
+            var screen = new Screen
+            {
+                Id = "main",
+                Title = "Main",
+                Content = new Models.Message { Text = "Main" }
+            };
+            screen.OnCallback("refresh_me", async (_, _) =>
+            {
+                await manager.RefreshCurrentScreenAsync(42);
+                return true;
+            });
+            manager.RegisterScreen(screen, isMainScreen: true);
+            await manager.NavigateToScreenAsync(42, "main");
+
+            var callbackTask = manager.HandleCallbackQueryAsync(new CallbackQuery
+            {
+                Id = "cb-refresh",
+                Data = "refresh_me",
+                Message = new Telegram.Bot.Types.Message { Chat = new Chat { Id = 42 } },
+                From = new User { Id = 1 }
+            }, CancellationToken.None);
+
+            var completed = await Task.WhenAny(callbackTask, Task.Delay(TimeSpan.FromSeconds(2)));
+            completed.Should().BeSameAs(callbackTask, "handler RefreshCurrentScreenAsync must not deadlock on the chat lock");
+            (await callbackTask).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task CallbackHandler_ThatCallsNavigate_DoesNotDeadlock()
+        {
+            var manager = BuildManager(out _);
+            var main = new Screen
+            {
+                Id = "main",
+                Title = "Main",
+                Content = new Models.Message { Text = "Main" }
+            };
+            var other = new Screen
+            {
+                Id = "other",
+                Title = "Other",
+                Content = new Models.Message { Text = "Other" }
+            };
+            main.OnCallback("go_other", async (_, _) =>
+            {
+                await manager.NavigateToScreenAsync(7, "other");
+                return true;
+            });
+            manager.RegisterScreen(main, isMainScreen: true);
+            manager.RegisterScreen(other);
+            await manager.NavigateToScreenAsync(7, "main");
+
+            var callbackTask = manager.HandleCallbackQueryAsync(new CallbackQuery
+            {
+                Id = "cb-nav",
+                Data = "go_other",
+                Message = new Telegram.Bot.Types.Message { Chat = new Chat { Id = 7 } },
+                From = new User { Id = 1 }
+            }, CancellationToken.None);
+
+            var completed = await Task.WhenAny(callbackTask, Task.Delay(TimeSpan.FromSeconds(2)));
+            completed.Should().BeSameAs(callbackTask, "handler NavigateToScreenAsync must not deadlock on the chat lock");
+            (await callbackTask).Should().BeTrue();
+            manager.StateMachine.GetCurrentScreen(7).Should().Be("other");
+        }
     }
 }

@@ -162,20 +162,20 @@ namespace FluentTelegramUI.Builders
         }
 
         /// <summary>
-        /// Sets the chat culture when a callback is received and refreshes the screen.
+        /// Sets the chat culture when a callback is received. The screen is
+        /// refreshed by <see cref="ScreenManager"/> after the handler returns.
         /// </summary>
         public ScreenBuilder OnSetCulture(string callbackData, string cultureName)
         {
-            _screen.OnCallback(callbackData, async (_, state) =>
+            _screen.OnCallback(callbackData, (_, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 _bot.StateMachine.SetState(chatId, LocalizationKeys.Culture, cultureName);
-                await _bot.RefreshCurrentScreenAsync(chatId);
-                return true;
+                return Task.FromResult(true);
             });
             return this;
         }
@@ -345,21 +345,20 @@ namespace FluentTelegramUI.Builders
         {
             var rating = new Rating(label, callbackDataPrefix, initialValue) { Id = callbackDataPrefix };
             _screen.AddControl(rating);
-            _screen.OnCallback($"{callbackDataPrefix}:*", async (data, state) =>
+            _screen.OnCallback($"{callbackDataPrefix}:*", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 var parts = data.Split(':');
                 if (parts.Length == 2 && int.TryParse(parts[1], out var value))
                 {
                     _bot.ScreenManager.SetControlState(chatId, _screen.Id, callbackDataPrefix, "value", value);
-                    await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                 }
 
-                return true;
+                return Task.FromResult(true);
             });
             return this;
         }
@@ -371,11 +370,11 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithCarouselHandler(string carouselId)
         {
-            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Previous}", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Previous}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
@@ -385,18 +384,17 @@ namespace FluentTelegramUI.Builders
                     if (index > 0)
                     {
                         _bot.ScreenManager.SetControlState(chatId, _screen.Id, carouselId, "index", index - 1);
-                        await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                     }
                 }
 
-                return true;
+                return Task.FromResult(true);
             });
 
-            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Next}", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Carousel}{carouselId}:{CarouselActions.Next}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 var carouselControl = _screen.Controls.FirstOrDefault(c => c.Id == carouselId) as ImageCarousel;
@@ -406,11 +404,10 @@ namespace FluentTelegramUI.Builders
                     if (index < carouselControl.ImageUrls.Count - 1)
                     {
                         _bot.ScreenManager.SetControlState(chatId, _screen.Id, carouselId, "index", index + 1);
-                        await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
                     }
                 }
 
-                return true;
+                return Task.FromResult(true);
             });
 
             return this;
@@ -423,28 +420,26 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithToggleHandler(string toggleId)
         {
-            _screen.OnCallback($"{toggleId}:{ToggleActions.On}", async (data, state) =>
+            _screen.OnCallback($"{toggleId}:{ToggleActions.On}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 _bot.ScreenManager.SetControlState(chatId, _screen.Id, toggleId, "isOn", true);
-                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
-                return true;
+                return Task.FromResult(true);
             });
 
-            _screen.OnCallback($"{toggleId}:{ToggleActions.Off}", async (data, state) =>
+            _screen.OnCallback($"{toggleId}:{ToggleActions.Off}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 _bot.ScreenManager.SetControlState(chatId, _screen.Id, toggleId, "isOn", false);
-                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
-                return true;
+                return Task.FromResult(true);
             });
 
             return this;
@@ -457,28 +452,26 @@ namespace FluentTelegramUI.Builders
         /// <returns>The screen builder instance for method chaining</returns>
         public ScreenBuilder WithAccordionHandler(string accordionId)
         {
-            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Expand}", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Expand}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 _bot.ScreenManager.SetControlState(chatId, _screen.Id, accordionId, "expanded", true);
-                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
-                return true;
+                return Task.FromResult(true);
             });
 
-            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Collapse}", async (data, state) =>
+            _screen.OnCallback($"{CallbackPrefixes.Accordion}{accordionId}:{AccordionActions.Collapse}", (data, state) =>
             {
                 if (!TryGetChatId(state, out var chatId))
                 {
-                    return true;
+                    return Task.FromResult(true);
                 }
 
                 _bot.ScreenManager.SetControlState(chatId, _screen.Id, accordionId, "expanded", false);
-                await _bot.ScreenManager.RefreshCurrentScreenAsync(chatId);
-                return true;
+                return Task.FromResult(true);
             });
 
             return this;
