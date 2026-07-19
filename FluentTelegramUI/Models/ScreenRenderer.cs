@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentTelegramUI.Resources;
@@ -116,7 +117,8 @@ public sealed class ScreenRenderer
             (key, defaultValue) => _stateStore.GetState(chatId, key, defaultValue) ?? defaultValue!);
 
         var bodyParts = new List<string>();
-        var allButtons = new List<Button>(mainMessage.Buttons);
+        var templateButtons = ResolveButtons(chatId, screen, mainMessage);
+        var allButtons = new List<Button>(templateButtons);
 
         foreach (var control in screen.Controls)
         {
@@ -130,6 +132,12 @@ public sealed class ScreenRenderer
         }
 
         var body = ResolveContentText(chatId, mainMessage.Text, screen.ContentResourceKey);
+        var viewText = _stateStore.GetState(chatId, PerChatScreenViewKeys.TextKey(screen.Id), string.Empty);
+        if (!string.IsNullOrEmpty(viewText))
+        {
+            body = viewText;
+        }
+
         if (bodyParts.Count > 0)
         {
             body = string.IsNullOrEmpty(body)
@@ -187,5 +195,51 @@ public sealed class ScreenRenderer
         }
 
         return text ?? string.Empty;
+    }
+
+    private List<Button> ResolveButtons(long chatId, Screen screen, Message mainMessage)
+    {
+        var storedJson = _stateStore.GetState(chatId, PerChatScreenViewKeys.ButtonsKey(screen.Id), string.Empty);
+        if (!string.IsNullOrEmpty(storedJson))
+        {
+            return DeserializeButtons(storedJson);
+        }
+
+        return new List<Button>(mainMessage.Buttons);
+    }
+
+    private static List<Button> DeserializeButtons(string json)
+    {
+        try
+        {
+            var items = JsonSerializer.Deserialize<List<StoredButtonDto>>(json);
+            if (items == null || items.Count == 0)
+            {
+                return [];
+            }
+
+            var buttons = new List<Button>(items.Count);
+            foreach (var item in items)
+            {
+                buttons.Add(new Button
+                {
+                    Text = item.Text,
+                    CallbackData = item.CallbackData,
+                });
+            }
+
+            return buttons;
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private sealed class StoredButtonDto
+    {
+        public string Text { get; set; } = string.Empty;
+
+        public string CallbackData { get; set; } = string.Empty;
     }
 }

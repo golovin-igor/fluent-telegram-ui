@@ -278,6 +278,12 @@ namespace FluentTelegramUI.Models
             }
 
             var navState = GetOrCreateNavigationState(chatId);
+            if (!string.IsNullOrEmpty(navState.CurrentScreenId)
+                && navState.CurrentScreenId != screenId)
+            {
+                PerChatScreenViewKeys.Clear(_stateMachine, chatId, navState.CurrentScreenId);
+            }
+
             navState.CurrentScreenId = screenId;
             _stateMachine.SetCurrentScreen(chatId, screenId);
 
