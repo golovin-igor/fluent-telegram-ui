@@ -96,6 +96,7 @@ Runnable examples live under [samples/](samples/):
 | `WebhookBot` | ASP.NET Core webhook endpoint |
 | `AdvancedComponentsBot` | Toggles, carousel, accordion, rating |
 | `LocalizedScreenBot` | English / German localized screens |
+| `RichMessageBot` | Native Rich Message pitch for fluent-telegram-ui |
 
 ```bash
 export TELEGRAM_BOT_TOKEN="your-token"

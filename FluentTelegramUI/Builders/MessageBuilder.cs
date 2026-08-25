@@ -102,6 +102,26 @@ namespace FluentTelegramUI.Builders
             _message.Buttons.Add(button);
             return this;
         }
+
+        /// <summary>
+        /// Sets native Rich Message HTML content and clears Markdown.
+        /// </summary>
+        public MessageBuilder WithRichHtml(string html)
+        {
+            _message.RichHtml = html;
+            _message.RichMarkdown = null;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets native Rich Message Markdown content and clears HTML.
+        /// </summary>
+        public MessageBuilder WithRichMarkdown(string markdown)
+        {
+            _message.RichMarkdown = markdown;
+            _message.RichHtml = null;
+            return this;
+        }
         
         /// <summary>
         /// Builds and returns the Message instance
@@ -109,8 +129,7 @@ namespace FluentTelegramUI.Builders
         /// <returns>The configured Message instance</returns>
         public Message Build()
         {
-            // Validate message
-            if (string.IsNullOrEmpty(_message.Text))
+            if (string.IsNullOrEmpty(_message.Text) && !_message.HasRichContent)
             {
                 throw new InvalidOperationException("Message text cannot be empty");
             }

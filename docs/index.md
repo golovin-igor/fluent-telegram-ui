@@ -41,6 +41,7 @@ We've recently added several advanced UI components:
 - **Accordion/Collapsible Sections** - For hiding/showing content
 - **Rich Text** - For text with advanced formatting
 - **Rating System** - For collecting user feedback
+- **Rich Messages** - Native Telegram `sendRichMessage` (headings, lists, tables)
 
 ## Getting Started
 
@@ -104,6 +105,7 @@ This is an open-source project, and we welcome contributions! Check out our [Con
 - [Screens](components/screens.md)
 - [Navigation](components/navigation.md)
 - [Context Parameters](components/context-parameters.md)
+- [Rich Messages](components/rich-messages.md)
 
 ## Advanced Topics
 

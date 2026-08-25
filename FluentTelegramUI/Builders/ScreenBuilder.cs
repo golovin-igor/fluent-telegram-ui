@@ -41,6 +41,26 @@ namespace FluentTelegramUI.Builders
             };
             return this;
         }
+
+        /// <summary>
+        /// Sets native Rich Message HTML as the full screen body. Screen title is not injected.
+        /// </summary>
+        public ScreenBuilder WithRichHtml(string html)
+        {
+            _screen.Content.RichHtml = html;
+            _screen.Content.RichMarkdown = null;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets native Rich Message Markdown as the full screen body. Screen title is not injected.
+        /// </summary>
+        public ScreenBuilder WithRichMarkdown(string markdown)
+        {
+            _screen.Content.RichMarkdown = markdown;
+            _screen.Content.RichHtml = null;
+            return this;
+        }
         
         /// <summary>
         /// Sets the content message of the screen
@@ -95,6 +115,21 @@ namespace FluentTelegramUI.Builders
                 CallbackData = callbackData
             };
             
+            _screen.Content.Buttons.Add(button);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a URL button to the screen
+        /// </summary>
+        public ScreenBuilder AddUrlButton(string text, string url)
+        {
+            var button = new Button
+            {
+                Text = text,
+                Url = url
+            };
+
             _screen.Content.Buttons.Add(button);
             return this;
         }

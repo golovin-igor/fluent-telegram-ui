@@ -154,6 +154,56 @@ namespace FluentTelegramUI.Tests
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => builder.Build());
         }
+
+        [Fact]
+        public void MessageBuilder_WithRichHtml_AllowsEmptyText()
+        {
+            var html = "<h1>Hello</h1>";
+
+            var message = new MessageBuilder()
+                .WithRichHtml(html)
+                .Build();
+
+            Assert.Equal(html, message.RichHtml);
+            Assert.True(message.HasRichContent);
+            Assert.Equal(html, message.ToInputRichMessage().Html);
+            Assert.Null(message.ToInputRichMessage().Markdown);
+        }
+
+        [Fact]
+        public void MessageBuilder_WithRichMarkdown_SetsMarkdownAndClearsHtml()
+        {
+            var message = new MessageBuilder()
+                .WithRichHtml("<p>html</p>")
+                .WithRichMarkdown("# Hello")
+                .Build();
+
+            Assert.Null(message.RichHtml);
+            Assert.Equal("# Hello", message.RichMarkdown);
+            Assert.True(message.HasRichContent);
+            Assert.Equal("# Hello", message.ToInputRichMessage().Markdown);
+        }
+
+        [Fact]
+        public void Message_ToInputRichMessage_Throws_WhenNeitherFormatIsSet()
+        {
+            var message = new Message { Text = "plain" };
+
+            Assert.Throws<InvalidOperationException>(() => message.ToInputRichMessage());
+        }
+
+        [Fact]
+        public void Message_ToInputRichMessage_Throws_WhenBothFormatsAreSet()
+        {
+            var message = new Message
+            {
+                RichHtml = "<p>html</p>",
+                RichMarkdown = "# md"
+            };
+
+            Assert.False(message.HasRichContent);
+            Assert.Throws<InvalidOperationException>(() => message.ToInputRichMessage());
+        }
         
         [Fact]
         public void Message_ToInlineKeyboardMarkup_ReturnsNull_WhenNoButtons()

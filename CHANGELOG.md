@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add opt-in Telegram Rich Messages (`WithRichHtml` / `WithRichMarkdown`) and `samples/RichMessageBot`
+
 ## 0.2.0
 
 - Target .NET 10 and Telegram.Bot 22.x
