@@ -106,6 +106,15 @@ namespace FluentTelegramUI
         {
             _logger.LogInformation("Sending message to chat {ChatId}", chatId);
             
+            if (message.HasRichContent)
+            {
+                return await _botClient.SendRichMessage(
+                    chatId: chatId,
+                    richMessage: message.ToInputRichMessage(),
+                    replyMarkup: message.ToInlineKeyboardMarkup(),
+                    cancellationToken: cancellationToken);
+            }
+
             return await _botClient.SendMessage(
                 chatId: chatId,
                 text: message.Text,

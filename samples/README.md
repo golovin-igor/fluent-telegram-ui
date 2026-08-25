@@ -9,6 +9,7 @@ Runnable examples for FluentTelegramUI v0.2+ (.NET 10, Telegram.Bot 22).
 | [WebhookBot](WebhookBot/) | ASP.NET Core webhook endpoint with optional secret-token validation |
 | [AdvancedComponentsBot](AdvancedComponentsBot/) | Demo of toggles, carousel, progress, accordion, rich text, and rating |
 | [LocalizedScreenBot](LocalizedScreenBot/) | Per-chat localization with resource keys and culture switching |
+| [RichMessageBot](RichMessageBot/) | Native Rich Message proposing fluent-telegram-ui on `/start` |
 
 ## Prerequisites
 
@@ -33,6 +34,9 @@ dotnet run --project samples/AdvancedComponentsBot
 
 # Localized screens (English / Deutsch)
 dotnet run --project samples/LocalizedScreenBot
+
+# Native Rich Message pitch
+dotnet run --project samples/RichMessageBot
 
 # WebhookBot (ASP.NET Core)
 dotnet run --project samples/WebhookBot

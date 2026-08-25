@@ -81,6 +81,40 @@ namespace FluentTelegramUI.Tests
         }
         
         [Fact]
+        public void ScreenBuilder_WithRichHtml_SetsRichHtmlContent()
+        {
+            var html = "<h1>Pitch</h1>";
+
+            _builder.WithRichHtml(html);
+            var screen = _builder.Build();
+
+            screen.Content.RichHtml.Should().Be(html);
+            screen.Content.HasRichContent.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ScreenBuilder_WithRichMarkdown_SetsRichMarkdownContent()
+        {
+            _builder.WithRichMarkdown("# Pitch");
+            var screen = _builder.Build();
+
+            screen.Content.RichMarkdown.Should().Be("# Pitch");
+            screen.Content.RichHtml.Should().BeNull();
+            screen.Content.HasRichContent.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ScreenBuilder_AddUrlButton_AddsUrlButtonToContent()
+        {
+            _builder.AddUrlButton("GitHub", "https://github.com/golovin-igor/fluent-telegram-ui");
+            var screen = _builder.Build();
+
+            screen.Content.Buttons.Should().ContainSingle();
+            screen.Content.Buttons[0].Text.Should().Be("GitHub");
+            screen.Content.Buttons[0].Url.Should().Be("https://github.com/golovin-igor/fluent-telegram-ui");
+        }
+
+        [Fact]
         public void ScreenBuilder_AddButton_AddsButtonToContent()
         {
             // Arrange

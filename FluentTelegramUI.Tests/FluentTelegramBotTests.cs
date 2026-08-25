@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Telegram.Bot;
+using Telegram.Bot.Requests;
 using Telegram.Bot.Requests.Abstractions;
 using Telegram.Bot.Types;
 using Xunit;
@@ -43,6 +44,28 @@ namespace FluentTelegramUI.Tests
             await bot.SendMessageAsync(123, new Models.Message { Text = "Hello, bot!" });
 
             capturedText.Should().Be("Hello, bot!");
+        }
+
+        [Fact]
+        public async Task SendMessageAsync_SendsRichMessageWhenRichHtmlIsSet()
+        {
+            var clientMock = new Mock<ITelegramBotClient>();
+            SendRichMessageRequest? captured = null;
+            clientMock.Setup(m => m.SendRequest(
+                    It.IsAny<IRequest<Message>>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<IRequest<Message>, CancellationToken>((req, _) =>
+                {
+                    captured = req as SendRichMessageRequest;
+                })
+                .ReturnsAsync(new Message());
+
+            var bot = BuildBot(clientMock);
+
+            await bot.SendMessageAsync(123, new Models.Message { RichHtml = "<h1>Hello</h1>" });
+
+            captured.Should().NotBeNull();
+            captured!.RichMessage.Html.Should().Be("<h1>Hello</h1>");
         }
 
         [Fact]

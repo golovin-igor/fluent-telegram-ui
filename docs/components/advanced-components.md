@@ -34,6 +34,7 @@ FluentTelegramUI includes a rich set of advanced UI components that allow you to
 | [Accordion](accordion.html) | Collapsible section to show/hide content | `AddAccordion()` |
 | [Rich Text](rich-text.html) | Text with formatting and alignment options | `AddRichText()` |
 | [Rating](rating.html) | Star-based rating system for feedback | `AddRating()` |
+| [Rich Messages](rich-messages.html) | Native Telegram sendRichMessage formatting | `WithRichHtml()` |
 
 ## Adding Components to Screens
 

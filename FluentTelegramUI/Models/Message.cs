@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FluentTelegramUI.Models
@@ -12,6 +14,22 @@ namespace FluentTelegramUI.Models
         /// The text content of the message
         /// </summary>
         public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Native Telegram Rich Message HTML. Mutually exclusive with <see cref="RichMarkdown"/>.
+        /// </summary>
+        public string? RichHtml { get; set; }
+
+        /// <summary>
+        /// Native Telegram Rich Message Markdown. Mutually exclusive with <see cref="RichHtml"/>.
+        /// </summary>
+        public string? RichMarkdown { get; set; }
+
+        /// <summary>
+        /// Whether this message uses native Rich Messages (exactly one of HTML or Markdown).
+        /// </summary>
+        public bool HasRichContent =>
+            !string.IsNullOrEmpty(RichHtml) ^ !string.IsNullOrEmpty(RichMarkdown);
         
         /// <summary>
         /// Whether to parse Markdown in the message text
@@ -85,6 +103,24 @@ namespace FluentTelegramUI.Models
         public string GetEffectiveImageCaption()
         {
             return !string.IsNullOrEmpty(ImageCaption) ? ImageCaption : Text;
+        }
+
+        /// <summary>
+        /// Converts native rich content into an <see cref="InputRichMessage"/> for the Bot API.
+        /// </summary>
+        public InputRichMessage ToInputRichMessage()
+        {
+            if (!HasRichContent)
+            {
+                throw new InvalidOperationException(
+                    "Exactly one of RichHtml or RichMarkdown must be set to send a rich message.");
+            }
+
+            return new InputRichMessage
+            {
+                Html = string.IsNullOrEmpty(RichHtml) ? null : RichHtml,
+                Markdown = string.IsNullOrEmpty(RichMarkdown) ? null : RichMarkdown
+            };
         }
     }
 } 

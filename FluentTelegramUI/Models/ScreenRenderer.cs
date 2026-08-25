@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,6 +56,34 @@ public sealed class ScreenRenderer
     {
         var renderMessage = BuildRenderMessage(chatId, screen);
         var markup = renderMessage.ToInlineKeyboardMarkup();
+
+        if (renderMessage.HasRichContent)
+        {
+            var richMessage = renderMessage.ToInputRichMessage();
+            if (!forceNewMessage && lastMessageId != 0)
+            {
+                try
+                {
+                    return await _botClient.EditMessageText(
+                        chatId: chatId,
+                        messageId: lastMessageId,
+                        text: default!,
+                        richMessage: richMessage,
+                        replyMarkup: markup as InlineKeyboardMarkup,
+                        cancellationToken: cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Edit failed for chat {ChatId}, sending a new rich message.", chatId);
+                }
+            }
+
+            return await _botClient.SendRichMessage(
+                chatId: chatId,
+                richMessage: richMessage,
+                replyMarkup: markup,
+                cancellationToken: cancellationToken);
+        }
 
         if (!forceNewMessage && lastMessageId != 0)
         {
@@ -131,6 +160,20 @@ public sealed class ScreenRenderer
             allButtons.AddRange(controlMsg.Buttons);
         }
 
+        AddBackButton(chatId, screen, allButtons);
+
+        if (mainMessage.HasRichContent)
+        {
+            return new Message
+            {
+                RichHtml = AppendControlHtml(mainMessage.RichHtml, bodyParts),
+                RichMarkdown = AppendControlMarkdown(mainMessage.RichMarkdown, bodyParts),
+                Style = style,
+                Buttons = allButtons,
+                ButtonsPerRow = mainMessage.ButtonsPerRow
+            };
+        }
+
         var body = ResolveContentText(chatId, mainMessage.Text, screen.ContentResourceKey);
         var viewText = _stateStore.GetState(chatId, PerChatScreenViewKeys.TextKey(screen.Id), string.Empty);
         if (!string.IsNullOrEmpty(viewText))
@@ -148,8 +191,6 @@ public sealed class ScreenRenderer
         body = FluentStyleTemplates.ApplyBody(style, body);
         var title = FluentStyleTemplates.ApplyTitle(style, ResolveTitleText(chatId, screen));
         var text = !string.IsNullOrEmpty(title) ? $"<b>{title}</b>\n\n{body}" : body;
-
-        AddBackButton(chatId, screen, allButtons);
 
         return new Message
         {
@@ -171,6 +212,41 @@ public sealed class ScreenRenderer
         }
 
         return screen.Title;
+    }
+
+    private static string? AppendControlHtml(string? html, List<string> bodyParts)
+    {
+        if (string.IsNullOrEmpty(html))
+        {
+            return html;
+        }
+
+        if (bodyParts.Count == 0)
+        {
+            return html;
+        }
+
+        foreach (var part in bodyParts)
+        {
+            html += $"<p>{WebUtility.HtmlEncode(part)}</p>";
+        }
+
+        return html;
+    }
+
+    private static string? AppendControlMarkdown(string? markdown, List<string> bodyParts)
+    {
+        if (string.IsNullOrEmpty(markdown))
+        {
+            return markdown;
+        }
+
+        if (bodyParts.Count == 0)
+        {
+            return markdown;
+        }
+
+        return markdown + "\n\n" + string.Join("\n\n", bodyParts);
     }
 
     private void AddBackButton(long chatId, Screen screen, List<Button> buttons)

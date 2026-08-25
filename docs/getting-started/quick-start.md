@@ -116,6 +116,10 @@ Add toggles, carousels, ratings, and more with `ScreenBuilder` extension methods
 
 See [Advanced UI Components](../components/advanced-components.md) and the [`AdvancedComponentsBot`](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples/AdvancedComponentsBot) sample.
 
+## Native Rich Messages
+
+Send Telegram Bot API Rich Messages with `WithRichHtml` or `WithRichMarkdown`. See [Rich Messages](../components/rich-messages.md) and [`samples/RichMessageBot`](https://github.com/golovin-igor/fluent-telegram-ui/tree/main/samples/RichMessageBot).
+
 ## Localization
 
 Localize titles and content with resource keys:
